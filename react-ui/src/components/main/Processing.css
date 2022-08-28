@@ -1,0 +1,18 @@
+.progress {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 80%;
+}
+
+.meter {
+    width: 100%;
+    background-color: lightgray;
+    border: 5px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.curr-prog {
+    background-color: lightskyblue;
+}
