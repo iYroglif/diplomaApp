@@ -1,8 +1,8 @@
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.http.response import HttpResponse, StreamingHttpResponse, HttpResponseRedirect
 from django.views.decorators.gzip import gzip_page
-from .models import UserTask
-from django.contrib.auth import authenticate, login, logout
+from .models import UserTask, ClassUser
+# from django.contrib.auth import authenticate, login, logout
 from http import HTTPStatus
 from django.http import JsonResponse
 from django.contrib.auth.models import User
@@ -12,6 +12,40 @@ from cv2 import VideoCapture, VideoWriter, imencode, VideoWriter_fourcc
 from .fastdvdnet import load_model, denoise
 
 model, device = load_model()
+
+
+class UserMapper:
+    @staticmethod
+    def get(username):
+        return User.objects.filter(username=username)
+
+    @staticmethod
+    def insert(username, password, first_name, last_name, email):
+        user = User.objects.create_user(
+            username, password=password, first_name=first_name, last_name=last_name, email=email)
+        user.save()
+        return ClassUser(user)
+
+
+class UserTaskMapper:
+    @staticmethod
+    def get(user, user_token, id):
+        return UserTask.objects.get(user=user, user_token=user_token, id=id)
+
+    @staticmethod
+    def getAll(user):
+        return UserTask.objects.filter(user=user)
+
+    @staticmethod
+    def insert(user, user_token, file, content_type, file_name, file_size):
+        userTask = UserTask.objects.create(
+            user=user,
+            user_token=user_token,
+            file=file,
+            content_type=content_type,
+            file_name=file_name,
+            file_size=file_size)
+        return userTask
 
 
 def processing(obj):
@@ -51,33 +85,29 @@ def upload(request):
     if request.method == 'POST':
         if request.FILES['file'] is not None:
             if request.FILES['file'].content_type == 'video/mp4' or request.FILES['file'].content_type == 'video/avi':
-                if request.user.is_authenticated:
-                    obj = UserTask.objects.create(
-                        user=request.user,
-                        user_token=request.COOKIES["csrftoken"],
-                        file=request.FILES['file'],
-                        content_type=request.FILES['file'].content_type,
-                        file_name=request.FILES['file'].name,
-                        file_size=request.FILES['file'].size)
+                # request.user.is_authenticated:
+                user = ClassUser(request.user)
+                if user.is_authenticated():
+                    userTask = UserTaskMapper.insert(
+                        request.user, request.COOKIES["csrftoken"], request.FILES['file'], request.FILES['file'].content_type, request.FILES['file'].name, request.FILES['file'].size)
                 else:
-                    obj, created = UserTask.objects.get_or_create(
-                        user=None,
-                        user_token=request.COOKIES["csrftoken"])
+                    userTask, created = UserTask.get_or_create(
+                        user=None, user_token=request.COOKIES["csrftoken"])
                     if not created:
-                        obj.file.delete()
-                    obj.file = request.FILES['file']
-                    obj.content_type = request.FILES['file'].content_type
-                    obj.file_name = request.FILES['file'].name
-                    obj.file_size = request.FILES['file'].size
-                obj.save()
-                vid = VideoCapture(obj.file.name)
-                obj.file_width = int(vid.get(3))
-                obj.file_height = int(vid.get(4))
-                obj.file_fps = int(vid.get(5))
-                obj.file_numframes = int(vid.get(7))
-                obj.save()
+                        userTask.file.delete()
+                    userTask.file = request.FILES['file']
+                    userTask.content_type = request.FILES['file'].content_type
+                    userTask.file_name = request.FILES['file'].name
+                    userTask.file_size = request.FILES['file'].size
+                userTask.save()
+                vid = VideoCapture(userTask.file.name)
+                userTask.file_width = int(vid.get(3))
+                userTask.file_height = int(vid.get(4))
+                userTask.file_fps = int(vid.get(5))
+                userTask.file_numframes = int(vid.get(7))
+                userTask.save()
                 vid.release()
-                return JsonResponse({'file_id': obj.pk})
+                return JsonResponse({'file_id': userTask.pk})
             else:
                 return HttpResponse(status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
         else:
@@ -86,31 +116,33 @@ def upload(request):
         return HttpResponse(status=HTTPStatus.METHOD_NOT_ALLOWED)
 
 
-def file_props(request, file_id):
+def getFileProps(request, file_id):
     if request.method == 'GET':
-        if request.user.is_authenticated:
-            obj = UserTask.objects.get(user=request.user, id=file_id)
+        user = ClassUser(request.user)
+        if user.is_authenticated():
+            userTask = UserTaskMapper.get(user=request.user, id=file_id)
         else:
-            obj = UserTask.objects.get(
+            userTask = UserTaskMapper.get(
                 user_token=request.COOKIES["csrftoken"], id=file_id)
-        if obj is not None:
-            return JsonResponse({'name': obj.file_name, 'size': obj.file_size, 'width': obj.file_width, 'height': obj.file_height, 'numframes': obj.file_numframes})
+        if userTask is not None:
+            return JsonResponse(userTask.file_props_to_dict())
         else:
             return HttpResponse(status=HTTPStatus.BAD_REQUEST)
     else:
         return HttpResponse(status=HTTPStatus.METHOD_NOT_ALLOWED)
 
 
-def file_preview(request, file_id):
+def getFilePreview(request, file_id):
     if request.method == 'GET':
-        if request.user.is_authenticated:
-            obj = UserTask.objects.get(
-                user_id=request.user.pk, id=file_id)
+        user = ClassUser(request.user)
+        if user.is_authenticated():
+            # проверить работу (раньше было: user_id=request.user.pk, id=file_id)
+            userTask = UserTaskMapper.get(user=request.user, id=file_id)
         else:
-            obj = UserTask.objects.get(
+            userTask = UserTaskMapper.get(
                 user_token=request.COOKIES["csrftoken"], id=file_id)
-        if obj is not None:
-            vid = VideoCapture(obj.file.name)
+        if userTask is not None:
+            vid = VideoCapture(userTask.file.name)
             _, frame = vid.read()
             _, frame = imencode('.jpg', frame)
             vid.release()
@@ -121,16 +153,17 @@ def file_preview(request, file_id):
         return HttpResponse(status=HTTPStatus.METHOD_NOT_ALLOWED)
 
 
-def file_preview_denoised(request, file_id):
+def getFilePreviewDenoised(request, file_id):
     if request.method == 'GET':
-        if request.user.is_authenticated:
-            obj = UserTask.objects.get(
-                user_id=request.user.pk, id=file_id)
+        user = ClassUser(request.user)
+        if user.is_authenticated():
+            # проверить работу (раньше было: user_id=request.user.pk, id=file_id)
+            userTask = UserTaskMapper.get(user=request.user, id=file_id)
         else:
-            obj = UserTask.objects.get(
+            userTask = UserTaskMapper.get(
                 user_token=request.COOKIES["csrftoken"], id=file_id)
-        if obj is not None:
-            vid = VideoCapture(obj.file.name)
+        if userTask is not None:
+            vid = VideoCapture(userTask.file.name)
 
             for den_frame, _ in denoise(model, device, vid):
                 _, den_frame = imencode('.jpg', den_frame)
@@ -145,14 +178,15 @@ def file_preview_denoised(request, file_id):
 
 
 def progress(request, file_id):
-    if request.user.is_authenticated:
-        obj = UserTask.objects.get(
-            user_id=request.user.pk, id=file_id)
+    user = ClassUser(request.user)
+    if user.is_authenticated():
+        # проверить работу (раньше было: user_id=request.user.pk, id=file_id)
+        userTask = UserTaskMapper.get(user=request.user, id=file_id)
     else:
-        obj = UserTask.objects.get(
+        userTask = UserTaskMapper.get(
             user_token=request.COOKIES["csrftoken"], id=file_id)
-    if obj is not None:
-        return StreamingHttpResponse(processing(obj), content_type='text/event-stream')
+    if userTask is not None:
+        return StreamingHttpResponse(processing(userTask), content_type='text/event-stream')
     else:
         return HttpResponse(status=HTTPStatus.BAD_REQUEST)
 
@@ -160,21 +194,24 @@ def progress(request, file_id):
 @gzip_page
 def download(request, file_id):
     if request.method == 'GET':
-        if request.user.is_authenticated:
-            obj = UserTask.objects.get(
-                user_id=request.user.pk, id=file_id)
+        user = ClassUser(request.user)
+        if user.is_authenticated():
+            # проверить работу (раньше было: user_id=request.user.pk, id=file_id)
+            userTask = UserTaskMapper.get(user=request.user, id=file_id)
         else:
-            obj = UserTask.objects.get(
+            userTask = UserTaskMapper.get(
                 user_token=request.COOKIES["csrftoken"], id=file_id)
-        if obj is not None:
-            s_fp = obj.file.name.rsplit('/')
-            ofp = s_fp[0] + '/denoised/' + str(obj.pk) + s_fp[1]
+        if userTask is not None:
+            s_fp = userTask.file.name.rsplit('/')
+            ofp = s_fp[0] + '/denoised/' + str(userTask.pk) + s_fp[1]
             if exists(ofp):
-                obj.file.delete()
-                obj.file = ofp
-                obj.save()
-            response = HttpResponse(obj.file, content_type=obj.content_type)
-            response['Content-Disposition'] = "attachment; filename=denoised_" + obj.file_name
+                userTask.file.delete()
+                userTask.file = ofp
+                userTask.save()
+            response = HttpResponse(
+                userTask.file, content_type=userTask.content_type)
+            response['Content-Disposition'] = "attachment; filename=denoised_" + \
+                userTask.file_name
             return response
             # return FileResponse(io.BytesIO(file).seek(), as_attachment=True, filename='test.png')
         else:
@@ -187,15 +224,17 @@ def download(request, file_id):
 @csrf_exempt
 def login_view(request):
     if request.method == 'GET':
-        if request.user.is_authenticated:
+        user = ClassUser(request.user)
+        if user.is_authenticated():
             return JsonResponse({'username': request.user.username})
         else:
             return HttpResponse(status=HTTPStatus.UNAUTHORIZED)
     elif request.method == 'POST':
-        user = authenticate(
-            request, username=request.POST['username'], password=request.POST['password'])
+        user = ClassUser.userAuthenticate(
+            request, request.POST['username'], request.POST['password'])
+        # user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
         if user is not None:
-            login(request, user)
+            user.userLogin(request)  # login(request, user)
             return JsonResponse({'username': request.user.username})
         else:
             return HttpResponse(status=HTTPStatus.UNAUTHORIZED)
@@ -204,29 +243,29 @@ def login_view(request):
 
 
 def logout_view(request):
-    logout(request)
+    ClassUser.userLogout(request)  # logout(request)
     return HttpResponseRedirect('/')
 
 
 @csrf_exempt  # @FIX почему не работает без декоратора
 def register(request):
     if request.method == 'POST':
-        if User.objects.filter(username=request.POST['username']).exists():
+        if UserMapper.get(request.POST['username']).exists():
             return HttpResponse(status=HTTPStatus.CONFLICT)
         else:
-            user = User.objects.create_user(
-                request.POST['username'], password=request.POST['password'], first_name=request.POST['first_name'], last_name=request.POST['last_name'], email=request.POST['email'], )
-            user.save()
-            login(request, user)
+            user = UserMapper.insert(request.POST['username'], request.POST['password'],
+                                     request.POST['first_name'], request.POST['last_name'], request.POST['email'])
+            user.userLogin(request)  # login(request, user)
             return HttpResponse(status=HTTPStatus.OK)
     else:
         return HttpResponse(status=HTTPStatus.METHOD_NOT_ALLOWED)
 
 
-def history(request):
+def getHistory(request):
     if request.method == 'GET':
-        if request.user.is_authenticated:
-            return JsonResponse({'tasks': list(UserTask.objects.filter(user=request.user).order_by('-date').values('id', 'file_name', 'file_size', 'date'))})
+        user = ClassUser(request.user)
+        if user.is_authenticated():
+            return JsonResponse(UserTask.getHistory(request.user))
         else:
             return HttpResponse(status=HTTPStatus.UNAUTHORIZED)
     else:
