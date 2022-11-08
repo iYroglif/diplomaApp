@@ -1,10 +1,5 @@
 import { Link } from "react-router-dom";
-
-interface ButtonProps {
-    name: string,
-    link: string,
-    className: string
-}
+import ButtonProps from "./ButtonPropsInterface";
 
 export default function Button({ name, link, className }: ButtonProps) {
     return (

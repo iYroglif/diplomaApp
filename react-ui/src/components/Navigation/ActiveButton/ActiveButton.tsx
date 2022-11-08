@@ -1,11 +1,8 @@
+import ButtonProps from "../Button/ButtonPropsInterface";
 import Button from "../Button/Button"
 
-interface ActiveButtonProps {
-    active: boolean,
-
-    name: string,
-    link: string,
-    className: string
+interface ActiveButtonProps extends ButtonProps{
+    active: boolean
 }
 
 export default function ActiveButton({ active, className, ...props }: ActiveButtonProps) {
