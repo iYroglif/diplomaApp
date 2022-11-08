@@ -1,71 +1,95 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "./UploadFile.css"
 
 export default function UploadFile() {
-  const [file, setFile] = useState<File | null>(null);
   const [dragEntered, setDragEntered] = useState(false)
-  const inputFile = useRef(null);
-  const navigate = useNavigate()
+  const inputFile = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      handleSetFile(event.target.files[0])
+  const uploadFile = useCallback(async (file: File) => {
+    const formData = new FormData();
+
+    formData.set('file', file, file.name);
+
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      navigate('/preview/' + data.file_id);
+    } else {
+      setDragEntered(false);
+      // throw new Error('Произошла ошибка при загрузке файла. Проверьте, что расширение файла поддерживается, и попробуйте снова.');
+      const e = new Error('Произошла ошибка при загрузке файла. Проверьте, что расширение файла поддерживается, и попробуйте снова.');
+      alert(e);
     }
-  }
+  }, []);
 
-  useEffect(() => {
-    if (file) {
-      const formData = new FormData();
-      formData.set('file', file, file.name);
-      fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      }).then((res) => {
-        if (res.ok)
-          return res.json()
-        else {
-          setDragEntered(false)
-          throw new Error('Произошла ошибка при загрузке файла. Проверьте, что расширение файла поддерживается, и попробуйте снова.')
-        }
-      }).then((data) => navigate('/preview/' + data.file_id))
-        .catch((e) => alert(e));
+  const handleChange = useCallback(() => {
+    if (inputFile.current && inputFile.current.files) {
+      const file = inputFile.current.files[0];
+
+      if (file.type.includes('mp4') || file.type.includes('avi')) {
+        uploadFile(file);
+      }
     }
-  }, [file, navigate])
+  }, []);
 
-  const handleSetFile = (file: File) => {
-    if (file.type.includes('mp4') || file.type.includes('avi'))
-      setFile(file)
-    else
-      return
-  }
+  // const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (event.target.files) {
+  //     handleSetFile(event.target.files[0])
+  //   }
+  // }
 
-  const handleDragEnter = () => {
-    setDragEntered(true)
-  }
+  // useEffect(() => {
+  //   if (file) {
+  //     const formData = new FormData();
+  //     formData.set('file', file, file.name);
+  //     fetch('/api/upload', {
+  //       method: 'POST',
+  //       body: formData,
+  //     }).then((res) => {
+  //       if (res.ok)
+  //         return res.json()
+  //       else {
+  //         setDragEntered(false)
+  //         throw new Error('Произошла ошибка при загрузке файла. Проверьте, что расширение файла поддерживается, и попробуйте снова.')
+  //       }
+  //     }).then((data) => navigate('/preview/' + data.file_id))
+  //       .catch((e) => alert(e));
+  //   }
+  // }, [file, navigate])
 
-  const handleDragLeave = () => {
-    setDragEntered(false)
-  }
+  // const handleSetFile = (file: File) => {
+  //   if (file.type.includes('mp4') || file.type.includes('avi'))
+  //     setFile(file)
+  //   else
+  //     return
+  // }
 
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault()
-    setDragEntered(true)
-    //event.stopPropagation()
-  }
+  const handleDragEnter = useCallback(() => {
+    setDragEntered(true);
+  }, []);
 
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault()
-    handleSetFile(event.dataTransfer.files[0])
-    setDragEntered(false)
-  }
+  const handleDragLeave = useCallback(() => {
+    setDragEntered(false);
+  }, []);
 
-  let dragAreaDisplay = 'none'
+  const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setDragEntered(true);
+  }, []);
 
-  if (dragEntered)
-    dragAreaDisplay = ''
-  else
-    dragAreaDisplay = 'none'
+  const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    uploadFile(event.dataTransfer.files[0]);
+    setDragEntered(false);
+  }, []);
+
+  const dragAreaDisplay = dragEntered ? "" : "none";
 
   return (
     <>
