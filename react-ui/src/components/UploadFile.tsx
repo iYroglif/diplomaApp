@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "./UploadFile.css"
 
-export const UploadFile = () => {
+export default function UploadFile() {
   const [file, setFile] = useState<File | null>(null);
   const [dragEntered, setDragEntered] = useState(false)
+  const inputFile = useRef(null);
   const navigate = useNavigate()
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,17 +76,23 @@ export const UploadFile = () => {
         onDrop={handleDrop}>
         Отпустите файл
       </div>
+
       <div className='upload-file'>
+
         <h2 className='func-name'>Удалить визуальный шум из видео</h2>
         <h3 className='func-desc'>Загрузите видеофайл, чтобы нейросеть удалила из него гауссовский шум</h3>
+
         <div className='drop-area'
           onDragEnter={handleDragEnter}>
+
           <div className='select-button'>
             <label htmlFor='inputFile'
               style={{ cursor: 'pointer', padding: '25px 80px' }}>
               Выбрать файл
             </label>
+
             <input id='inputFile'
+              ref={inputFile}
               type='file'
               onChange={handleChange}
               multiple={false}
@@ -94,8 +101,10 @@ export const UploadFile = () => {
               style={{ display: 'none' }}>
             </input>
           </div>
+
           <span className='drop-text'>или просто перетащите файл</span>
         </div>
+
         <p>на данный момент поддерживаются форматы mp4 и avi</p>
       </div>
     </>

@@ -1,24 +1,21 @@
 import { useEffect, useState } from "react";
 import { Route, Routes } from "react-router-dom";
-import { UploadFile } from "./components/UploadFile";
-import { Navigation } from "./components/Navigation";
+import "./App.css"
+import Navigation from "./components/Navigation/Navigation";
+import UploadFile from "./components/UploadFile";
 import { Login } from './components/Login';
 import { Register } from './components/Register';
 import { HistoryComponent } from "./components/HistoryComponent"
 import { Footer } from "./components/Footer";
 import { About } from "./components/About";
-import "./App.css"
 import { Logout } from "./components/Logout";
 import { Preview } from "./components/main/Preview";
 import { Download } from "./components/main/Download";
 import { NotFound } from "./components/NotFound";
+import User from "./UserInterface";
 
-export interface IUser {
-  username: string
-}
-
-export const App = () => {
-  const [user, setUser] = useState<IUser | null>(null)
+export default function App() {
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     fetch('/api/login')
@@ -26,7 +23,7 @@ export const App = () => {
         if (res.ok)
           return res.json()
       }).then((data) => setUser(data))
-  }, [])
+  }, []);
 
   return (
     <>
