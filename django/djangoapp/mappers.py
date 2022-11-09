@@ -21,8 +21,8 @@ class UserTaskMapper:
         return UserTask.objects.get(user=user, user_token=user_token, id=id)
 
     @staticmethod
-    def getAll(user):
-        return UserTask.objects.filter(user=user)
+    def getAll(user_id):
+        return UserTask.objects.filter(user=user_id)
 
     @staticmethod
     def insert(user, user_token, file, content_type, file_name, file_size):

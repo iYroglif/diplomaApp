@@ -9,7 +9,7 @@ from cv2 import VideoCapture
 # Create your views here.
 
 
-@csrf_exempt  # @FIX почему не работает без декоратора
+@csrf_exempt
 def upload(request):
     if request.method == 'POST':
         if request.FILES['file'] is not None:
@@ -128,9 +128,8 @@ def login_view(request):
     elif request.method == 'POST':
         user = ClassUser.userAuthenticate(
             request, request.POST['username'], request.POST['password'])
-        # user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
         if user is not None:
-            user.userLogin(request)  # login(request, user)
+            user.userLogin(request)
             return JsonResponse({'username': request.user.username})
         else:
             return HttpResponse(status=HTTPStatus.UNAUTHORIZED)
@@ -139,11 +138,11 @@ def login_view(request):
 
 
 def logout_view(request):
-    ClassUser.userLogout(request)  # logout(request)
+    ClassUser.userLogout(request)
     return HttpResponseRedirect('/')
 
 
-@csrf_exempt  # @FIX почему не работает без декоратора
+@csrf_exempt
 def register(request):
     if request.method == 'POST':
         if ClassUser.already_exists(request.POST['username']):
@@ -151,7 +150,7 @@ def register(request):
         else:
             user = ClassUser.create(request.POST['username'], request.POST['password'],
                                     request.POST['first_name'], request.POST['last_name'], request.POST['email'])
-            user.userLogin(request)  # login(request, user)
+            user.userLogin(request)
             return HttpResponse(status=HTTPStatus.OK)
     else:
         return HttpResponse(status=HTTPStatus.METHOD_NOT_ALLOWED)
@@ -161,7 +160,7 @@ def getHistory(request):
     if request.method == 'GET':
         user = ClassUser(request.user)
         if user.is_authenticated():
-            return JsonResponse(UserTask.getHistory(request.user))
+            return JsonResponse(UserTask.getHistory(request.user.pk))
         else:
             return HttpResponse(status=HTTPStatus.UNAUTHORIZED)
     else:

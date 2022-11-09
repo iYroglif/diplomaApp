@@ -34,7 +34,6 @@ class UserTask(models.Model):
     @staticmethod
     def get_UserTask(file_id, user=None, user_token=None):
         if user is not None:
-            # проверить работу (раньше было: user_id=request.user.pk, id=file_id)
             userTask = UserTaskMapper.get(user=user, id=file_id)
         else:
             userTask = UserTaskMapper.get(user_token=user_token, id=file_id)
@@ -47,13 +46,11 @@ class UserTask(models.Model):
         if userTask is not None:
             return userTask, False
 
-        # return UserTask.objects.create(user=user, user_token=user_token), True
         return UserTaskMapper.insert(user=user, user_token=user_token), True
 
     @staticmethod
     def file_props_to_dict(file_id, user=None, user_token=None):
         if user is not None:
-            # проверить работу (раньше было: user_id=request.user.pk, id=file_id)
             userTask = UserTaskMapper.get(user=user, id=file_id)
         else:
             userTask = UserTaskMapper.get(user_token=user_token, id=file_id)
@@ -65,7 +62,6 @@ class UserTask(models.Model):
     @staticmethod
     def get_frame(file_id, user=None, user_token=None):
         if user is not None:
-            # проверить работу (раньше было: user_id=request.user.pk, id=file_id)
             userTask = UserTaskMapper.get(user=user, id=file_id)
         else:
             userTask = UserTaskMapper.get(
@@ -82,7 +78,6 @@ class UserTask(models.Model):
     @staticmethod
     def get_denoised_frame(file_id, user=None, user_token=None):
         if user is not None:
-            # проверить работу (раньше было: user_id=request.user.pk, id=file_id)
             userTask = UserTaskMapper.get(user=user, id=file_id)
         else:
             userTask = UserTaskMapper.get(
@@ -118,7 +113,6 @@ class UserTask(models.Model):
             response['Content-Disposition'] = "attachment; filename=denoised_" + \
                 userTask.file_name
             return response
-            # return FileResponse(io.BytesIO(file).seek(), as_attachment=True, filename='test.png')
         else:
             return None
 
@@ -128,10 +122,6 @@ class UserTask(models.Model):
         s_fp = fp.rsplit('/')
         ofp = s_fp[0] + '/denoised/' + str(self.pk) + s_fp[1]
 
-        #img = cv2.imdecode(np.fromstring(files[token][0], np.uint8), 1)
-        #img = testtt(img)
-        #files[token][0] = cv2.imencode('.png', img)[1].tobytes()
-
         i = 0
 
         vid = VideoCapture(fp)
@@ -139,7 +129,7 @@ class UserTask(models.Model):
         hght = int(vid.get(4))
         fps = vid.get(5)
         cdc = int(vid.get(6))
-        # @FIX разобраться с кодеками в докере линукс
+
         o_vid = VideoWriter(ofp, VideoWriter_fourcc(
             *'mp4v'), fps, (wdth, hght))
 
@@ -153,8 +143,8 @@ class UserTask(models.Model):
         return
 
     @staticmethod
-    def getHistory(user):
-        return {'tasks': list(UserTaskMapper.getAll(user).order_by('-date').values('id', 'file_name', 'file_size', 'date'))}
+    def getHistory(user_id):
+        return {'tasks': list(UserTaskMapper.getAll(user_id).order_by('-date').values('id', 'file_name', 'file_size', 'date'))}
 
 
 class ClassUser(User):
