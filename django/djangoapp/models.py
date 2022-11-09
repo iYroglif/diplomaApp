@@ -1,9 +1,14 @@
-from django.conf import settings
+from os.path import exists
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
-from .views import UserTaskMapper
+from .mappers import UserTaskMapper, UserMapper
+from django.http.response import HttpResponse
+from .fastdvdnet import load_model, denoise
+from cv2 import VideoCapture, imencode, VideoWriter, VideoWriter_fourcc
+
+model, device = load_model()
 
 # Create your models here.
 
@@ -23,6 +28,19 @@ class UserTask(models.Model):
     date = models.DateTimeField(auto_now=True)
 
     @staticmethod
+    def create(user, cookie, file, content_type, name, size):
+        return UserTaskMapper.insert(user, cookie, file, content_type, name, size)
+
+    @staticmethod
+    def get_UserTask(file_id, user=None, user_token=None):
+        if user is not None:
+            # проверить работу (раньше было: user_id=request.user.pk, id=file_id)
+            userTask = UserTaskMapper.get(user=user, id=file_id)
+        else:
+            userTask = UserTaskMapper.get(user_token=user_token, id=file_id)
+        return userTask
+
+    @staticmethod
     def get_or_create(user, user_token):
         userTask = UserTaskMapper.get(user=user, user_token=user_token)
 
@@ -32,8 +50,107 @@ class UserTask(models.Model):
         # return UserTask.objects.create(user=user, user_token=user_token), True
         return UserTaskMapper.insert(user=user, user_token=user_token), True
 
-    def file_props_to_dict(self):
-        return {'name': self.file_name, 'size': self.file_size, 'width': self.file_width, 'height': self.file_height, 'numframes': self.file_numframes}
+    @staticmethod
+    def file_props_to_dict(file_id, user=None, user_token=None):
+        if user is not None:
+            # проверить работу (раньше было: user_id=request.user.pk, id=file_id)
+            userTask = UserTaskMapper.get(user=user, id=file_id)
+        else:
+            userTask = UserTaskMapper.get(user_token=user_token, id=file_id)
+        if userTask is not None:
+            return {'name': userTask.file_name, 'size': userTask.file_size, 'width': userTask.file_width, 'height': userTask.file_height, 'numframes': userTask.file_numframes}
+        else:
+            return None
+
+    @staticmethod
+    def get_frame(file_id, user=None, user_token=None):
+        if user is not None:
+            # проверить работу (раньше было: user_id=request.user.pk, id=file_id)
+            userTask = UserTaskMapper.get(user=user, id=file_id)
+        else:
+            userTask = UserTaskMapper.get(
+                user_token=user_token, id=file_id)
+        if userTask is not None:
+            vid = VideoCapture(userTask.file.name)
+            _, frame = vid.read()
+            _, frame = imencode('.jpg', frame)
+            vid.release()
+            return frame
+        else:
+            return None
+
+    @staticmethod
+    def get_denoised_frame(file_id, user=None, user_token=None):
+        if user is not None:
+            # проверить работу (раньше было: user_id=request.user.pk, id=file_id)
+            userTask = UserTaskMapper.get(user=user, id=file_id)
+        else:
+            userTask = UserTaskMapper.get(
+                user_token=user_token, id=file_id)
+        if userTask is not None:
+            vid = VideoCapture(userTask.file.name)
+
+            for den_frame, _ in denoise(model, device, vid):
+                _, den_frame = imencode('.jpg', den_frame)
+                break
+
+            vid.release()
+            return den_frame
+        else:
+            return None
+
+    @staticmethod
+    def file_to_response(file_id, user=None, user_token=None):
+        if user is not None:
+            userTask = UserTaskMapper.get(user=user, id=file_id)
+        else:
+            userTask = UserTaskMapper.get(
+                user_token=user_token, id=file_id)
+        if userTask is not None:
+            s_fp = userTask.file.name.rsplit('/')
+            ofp = s_fp[0] + '/denoised/' + str(userTask.pk) + s_fp[1]
+            if exists(ofp):
+                userTask.file.delete()
+                userTask.file = ofp
+                userTask.save()
+            response = HttpResponse(
+                userTask.file, content_type=userTask.content_type)
+            response['Content-Disposition'] = "attachment; filename=denoised_" + \
+                userTask.file_name
+            return response
+            # return FileResponse(io.BytesIO(file).seek(), as_attachment=True, filename='test.png')
+        else:
+            return None
+
+    def processing(self):
+        yield 'data:0\nid:0\n\n'
+        fp = self.file.name
+        s_fp = fp.rsplit('/')
+        ofp = s_fp[0] + '/denoised/' + str(self.pk) + s_fp[1]
+
+        #img = cv2.imdecode(np.fromstring(files[token][0], np.uint8), 1)
+        #img = testtt(img)
+        #files[token][0] = cv2.imencode('.png', img)[1].tobytes()
+
+        i = 0
+
+        vid = VideoCapture(fp)
+        wdth = int(vid.get(3))
+        hght = int(vid.get(4))
+        fps = vid.get(5)
+        cdc = int(vid.get(6))
+        # @FIX разобраться с кодеками в докере линукс
+        o_vid = VideoWriter(ofp, VideoWriter_fourcc(
+            *'mp4v'), fps, (wdth, hght))
+
+        for den_frame, proc in denoise(model, device, vid):
+            o_vid.write(den_frame)
+            yield 'data:{:.2f}\nid:{}\n\n'.format(proc, i)
+            i += 1
+
+        vid.release()
+        o_vid.release()
+        return
 
     @staticmethod
     def getHistory(user):
@@ -55,6 +172,16 @@ class ClassUser(User):
         self.date_joined = user.date_joined
         self.first_name = user.first_name
 
+    @staticmethod
+    def already_exists(username):
+        return UserMapper.get(username).exists()
+
+    @staticmethod
+    def create(username, password, first_name, last_name, email):
+        user = UserMapper.insert(
+            username, password, first_name, last_name, email)
+        return ClassUser(user)
+
     def is_authenticated(self):
         return self.user.is_authenticated
 
@@ -73,15 +200,3 @@ class ClassUser(User):
     def userLogout(request):
         logout(request)
         return
-
-
-# class AbstractUser(AbstractBaseUser, PermissionsMixin):
-#     username_validator: UnicodeUsernameValidator = ...
-
-#     username = models.CharField(max_length=150)
-#     first_name = models.CharField(max_length=30, blank=True)
-#     last_name = models.CharField(max_length=150, blank=True)
-#     email = models.EmailField(blank=True)
-#     is_staff = models.BooleanField()
-#     is_active = models.BooleanField()
-#     date_joined = models.DateTimeField()
