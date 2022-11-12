@@ -3,8 +3,8 @@ from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
-from .mappers import UserTaskMapper, UserMapper
 from django.http.response import HttpResponse
+from functools import partial
 from .fastdvdnet import load_model, denoise
 from cv2 import VideoCapture, imencode, VideoWriter, VideoWriter_fourcc
 
@@ -28,44 +28,39 @@ class UserTask(models.Model):
     date = models.DateTimeField(auto_now=True)
 
     @staticmethod
-    def create(user, cookie, file, content_type, name, size):
-        return UserTaskMapper.insert(user, cookie, file, content_type, name, size)
+    def create(user_id, cookie, file, content_type, name, size):
+        return UserTaskMapper.insert(user_id, cookie, file, content_type, name, size)
 
     @staticmethod
-    def get_UserTask(file_id, user=None, user_token=None):
-        if user is not None:
-            userTask = UserTaskMapper.get(user=user, id=file_id)
-        else:
-            userTask = UserTaskMapper.get(user_token=user_token, id=file_id)
+    def get_UserTask(file_id, user_id=None, user_token=None):
+        userTask = UserTaskMapper.get(
+            user_id=user_id, user_token=user_token, id=file_id)
         return userTask
 
     @staticmethod
-    def get_or_create(user, user_token):
-        userTask = UserTaskMapper.get(user=user, user_token=user_token)
-
-        if userTask is not None:
+    def get_or_create(user_id, user_token):
+        try:
+            userTask = UserTaskMapper.get(
+                user_id=user_id, user_token=user_token)
             return userTask, False
-
-        return UserTaskMapper.insert(user=user, user_token=user_token), True
+        except:
+            return UserTaskMapper.insert(user_id=user_id, user_token=user_token), True
 
     @staticmethod
-    def file_props_to_dict(file_id, user=None, user_token=None):
-        if user is not None:
-            userTask = UserTaskMapper.get(user=user, id=file_id)
-        else:
-            userTask = UserTaskMapper.get(user_token=user_token, id=file_id)
+    def file_props_to_dict(file_id, user_id=None, user_token=None):
+        userTask = UserTaskMapper.get(
+            user_id=user_id, user_token=user_token, id=file_id)
+
         if userTask is not None:
             return {'name': userTask.file_name, 'size': userTask.file_size, 'width': userTask.file_width, 'height': userTask.file_height, 'numframes': userTask.file_numframes}
         else:
             return None
 
     @staticmethod
-    def get_frame(file_id, user=None, user_token=None):
-        if user is not None:
-            userTask = UserTaskMapper.get(user=user, id=file_id)
-        else:
-            userTask = UserTaskMapper.get(
-                user_token=user_token, id=file_id)
+    def get_frame(file_id, user_id=None, user_token=None):
+        userTask = UserTaskMapper.get(
+            user_id=user_id, user_token=user_token, id=file_id)
+
         if userTask is not None:
             vid = VideoCapture(userTask.file.name)
             _, frame = vid.read()
@@ -76,12 +71,10 @@ class UserTask(models.Model):
             return None
 
     @staticmethod
-    def get_denoised_frame(file_id, user=None, user_token=None):
-        if user is not None:
-            userTask = UserTaskMapper.get(user=user, id=file_id)
-        else:
-            userTask = UserTaskMapper.get(
-                user_token=user_token, id=file_id)
+    def get_denoised_frame(file_id, user_id=None, user_token=None):
+        userTask = UserTaskMapper.get(
+            user_id=user_id, user_token=user_token, id=file_id)
+
         if userTask is not None:
             vid = VideoCapture(userTask.file.name)
 
@@ -95,12 +88,10 @@ class UserTask(models.Model):
             return None
 
     @staticmethod
-    def file_to_response(file_id, user=None, user_token=None):
-        if user is not None:
-            userTask = UserTaskMapper.get(user=user, id=file_id)
-        else:
-            userTask = UserTaskMapper.get(
-                user_token=user_token, id=file_id)
+    def file_to_response(file_id, user_id=None, user_token=None):
+        userTask = UserTaskMapper.get(
+            user_id=user_id, user_token=user_token, id=file_id)
+
         if userTask is not None:
             s_fp = userTask.file.name.rsplit('/')
             ofp = s_fp[0] + '/denoised/' + str(userTask.pk) + s_fp[1]
@@ -150,17 +141,6 @@ class UserTask(models.Model):
 class ClassUser(User):
     def __init__(self, user):
         self.user = user
-        self.id = user.id
-        self.password = user.password
-        self.last_login = user.last_login
-        self.is_superuser = user.is_superuser
-        self.username = user.username
-        self.last_name = user.last_name
-        self.email = user.email
-        self.is_staff = user.is_staff
-        self.is_active = user.is_active
-        self.date_joined = user.date_joined
-        self.first_name = user.first_name
 
     @staticmethod
     def already_exists(username):
@@ -190,3 +170,50 @@ class ClassUser(User):
     def userLogout(request):
         logout(request)
         return
+
+
+class UserMapper:
+    @staticmethod
+    def get(username):
+        return User.objects.filter(username=username)
+
+    @staticmethod
+    def insert(username, password, first_name, last_name, email):
+        user = User.objects.create_user(
+            username, password=password, first_name=first_name, last_name=last_name, email=email)
+        user.save()
+        return user
+
+
+class UserTaskMapper:
+    @staticmethod
+    def get(user_id=None, user_token=None, id=None):
+        get = UserTask.objects.get
+        if user_id is not None:
+            get = partial(get, user_id=user_id)
+        if user_token is not None:
+            get = partial(get, user_token=user_token)
+        if id is not None:
+            get = partial(get, id=id)
+
+        return get()
+
+    @staticmethod
+    def getAll(user_id):
+        return UserTask.objects.filter(user_id=user_id)
+
+    @staticmethod
+    def insert(user_id, user_token, file=None, content_type=None, file_name=None, file_size=None):
+        create = partial(UserTask.objects.create,
+                         user_id=user_id, user_token=user_token)
+        if file is not None:
+            create = partial(create, file=file)
+        if content_type is not None:
+            create = partial(create, content_type=content_type)
+        if file_name is not None:
+            create = partial(create, file_name=file_name)
+        if file_size is not None:
+            create = partial(create, file_size=file_size)
+
+        userTask = create()
+        return userTask
