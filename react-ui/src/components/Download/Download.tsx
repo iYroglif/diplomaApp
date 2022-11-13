@@ -2,11 +2,11 @@ import { useEffect } from "react"
 import { useParams } from "react-router-dom"
 import "./Download.css"
 
-export const Download = () => {
-    const params = useParams()
+export default function Download() {
+    const params = useParams();
 
     useEffect(() => {
-        document.location.href = "/api/download/" + params.fileId
+        document.location.href = "/api/download/" + params.fileId;
     }, [params.fileId])
 
     return (
@@ -24,5 +24,5 @@ export const Download = () => {
                 </>
             )}
         </>
-    )
+    );
 }

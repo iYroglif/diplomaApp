@@ -1,5 +1,5 @@
 import { ITask } from "../HistoryComponent"
-import { calcFileSize } from "../main/Preview"
+import calcFileSize from "../calcFileSize"
 
 export const TaskRow = ({ id, file_name, file_size, date }: ITask) => {
     return (

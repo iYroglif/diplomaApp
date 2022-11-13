@@ -1,74 +1,38 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import "./UploadFile.css"
+import "./UploadFile.css";
 
 export default function UploadFile() {
-  const [dragEntered, setDragEntered] = useState(false)
+  const [dragEntered, setDragEntered] = useState(false);
   const inputFile = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
   const uploadFile = useCallback(async (file: File) => {
-    const formData = new FormData();
-
-    formData.set('file', file, file.name);
-
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      navigate('/preview/' + data.file_id);
-    } else {
-      setDragEntered(false);
-      // throw new Error('Произошла ошибка при загрузке файла. Проверьте, что расширение файла поддерживается, и попробуйте снова.');
-      const e = new Error('Произошла ошибка при загрузке файла. Проверьте, что расширение файла поддерживается, и попробуйте снова.');
-      alert(e);
+    if (file.type.includes('mp4') || file.type.includes('avi')) {
+      const formData = new FormData();
+  
+      formData.set('file', file, file.name);
+  
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        navigate('/preview/' + data.file_id);
+      } else {
+        // throw new Error('Произошла ошибка при загрузке файла. Проверьте, что расширение файла поддерживается, и попробуйте снова.');
+        alert('Произошла ошибка при загрузке файла. Проверьте, что расширение файла поддерживается, и попробуйте снова.');
+      }
     }
-  }, []);
+  }, [navigate]);
 
   const handleChange = useCallback(() => {
     if (inputFile.current && inputFile.current.files) {
-      const file = inputFile.current.files[0];
-
-      if (file.type.includes('mp4') || file.type.includes('avi')) {
-        uploadFile(file);
-      }
+      uploadFile(inputFile.current.files[0]);
     }
   }, []);
-
-  // const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (event.target.files) {
-  //     handleSetFile(event.target.files[0])
-  //   }
-  // }
-
-  // useEffect(() => {
-  //   if (file) {
-  //     const formData = new FormData();
-  //     formData.set('file', file, file.name);
-  //     fetch('/api/upload', {
-  //       method: 'POST',
-  //       body: formData,
-  //     }).then((res) => {
-  //       if (res.ok)
-  //         return res.json()
-  //       else {
-  //         setDragEntered(false)
-  //         throw new Error('Произошла ошибка при загрузке файла. Проверьте, что расширение файла поддерживается, и попробуйте снова.')
-  //       }
-  //     }).then((data) => navigate('/preview/' + data.file_id))
-  //       .catch((e) => alert(e));
-  //   }
-  // }, [file, navigate])
-
-  // const handleSetFile = (file: File) => {
-  //   if (file.type.includes('mp4') || file.type.includes('avi'))
-  //     setFile(file)
-  //   else
-  //     return
-  // }
 
   const handleDragEnter = useCallback(() => {
     setDragEntered(true);
@@ -120,7 +84,6 @@ export default function UploadFile() {
               type='file'
               onChange={handleChange}
               multiple={false}
-              // accept='video/*,image/*'
               accept='video/*'
               style={{ display: 'none' }}>
             </input>

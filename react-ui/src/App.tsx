@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import { Route, Routes } from "react-router-dom";
-import "./App.css"
+import "./App.css";
 import Navigation from "./components/Navigation/Navigation";
-import UploadFile from "./components/UploadFile";
+import UploadFile from "./components/UploadFile/UploadFile";
+import Preview from "./components/Preview/Preview";
+import Download from "./components/Download/Download";
 import { Login } from './components/Login';
 import { Register } from './components/Register';
 import { HistoryComponent } from "./components/HistoryComponent"
 import { Footer } from "./components/Footer";
 import { About } from "./components/About";
 import { Logout } from "./components/Logout";
-import { Preview } from "./components/main/Preview";
-import { Download } from "./components/main/Download";
 import { NotFound } from "./components/NotFound";
 import User from "./UserInterface";
 
@@ -23,7 +23,7 @@ export default function App() {
         if (res.ok)
           return res.json()
       }).then((data) => setUser(data))
-  }, []);
+  }, [])
 
   return (
     <>
