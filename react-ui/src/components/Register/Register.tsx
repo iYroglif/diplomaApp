@@ -1,29 +1,28 @@
-import React, { useEffect, useState } from "react";
-import "./Register.css"
+import { FormEvent, useCallback, useState } from "react";
+import "./Register.css";
 
-export const Register = () => {
-    const [registerError, setRegisterError] = useState(false)
-    const [userName, setUserName] = useState('')
-    const [fPass, setFPass] = useState('')
-    const [sPass, setSPass] = useState('')
-    const [formCorrect, setFormCorrect] = useState(false)
+export default function Register() {
+    const [userName, setUserName] = useState('');
+    const [firstPassword, setFirstPassword] = useState('');
+    const [secondPassword, setSecondPassword] = useState('');
+    const [registerError, setRegisterError] = useState(false);
 
-    useEffect(() => {
-        if (userName && fPass && fPass === sPass) setFormCorrect(true)
-        else setFormCorrect(false)
-    }, [userName, fPass, sPass])
+    const handleSubmit = useCallback(async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
 
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault()
-        fetch('/api/register', {
+        const response = await fetch('/api/register', {
             method: 'POST',
             body: new FormData(event.currentTarget)
-        }).then((res) => {
-            if (res.ok)
-                document.location.href = "/"
-            else setRegisterError(true)
-        })
-    }
+        });
+
+        if (response.ok) {
+            document.location.href = "/";
+        } else {
+            setRegisterError(true);
+        }
+    }, []);
+
+    const formCorrect = userName && firstPassword && firstPassword === secondPassword ? true : false;
 
     return (
         <>
@@ -42,10 +41,10 @@ export const Register = () => {
                     <input className="form-control" type="email" id="email" name="email"></input>
 
                     <label htmlFor="password">Пароль</label>
-                    <input className="form-control" type="password" id="password" name="password" value={fPass} onChange={(e) => setFPass(e.target.value)}></input>
+                    <input className="form-control" type="password" id="password" name="password" value={firstPassword} onChange={(e) => setFirstPassword(e.target.value)}></input>
 
                     <label htmlFor="check_password">Повторите пароль</label>
-                    <input className="form-control" type="password" id="check_password" value={sPass} onChange={(e) => setSPass(e.target.value)}></input>
+                    <input className="form-control" type="password" id="check_password" value={secondPassword} onChange={(e) => setSecondPassword(e.target.value)}></input>
                 </div>
                 <button className="btn btn-success btn-reg" type="submit" disabled={registerError || !formCorrect}>Зарегистрироваться</button>
             </form>

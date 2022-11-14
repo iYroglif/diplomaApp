@@ -1,15 +1,9 @@
-import { useEffect, useState } from "react"
-import { TaskRow } from "./history/TaskRow"
-import "./HistoryComponent.css"
+import { useEffect, useState } from "react";
+import { TaskRow } from "./TaskRow";
+import "./History.css";
+import TaskRowProps from "./TaskRowPropsInterface";
 
-export interface ITask {
-    id: string
-    file_name: string
-    file_size: number
-    date: string
-}
-
-export const HistoryComponent = () => {
+export default function History() {
     const [rows, setRows] = useState<JSX.Element[]>([])
 
     useEffect(() => {
@@ -20,7 +14,7 @@ export const HistoryComponent = () => {
             })
             .then((data) => {
                 const tempRows: JSX.Element[] = []
-                data.tasks.forEach((row: ITask) => {
+                data.tasks.forEach((row: TaskRowProps) => {
                     tempRows.push(
                         <TaskRow {...row} />
                     )
@@ -43,5 +37,5 @@ export const HistoryComponent = () => {
                 <tbody>{rows}</tbody>
             </table>
         </div>
-    )
+    );
 }

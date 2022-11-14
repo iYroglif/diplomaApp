@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
-export default function useFetchBlob(url: string): [Blob | null, Error | null] {
-    const [blob, setBlob] = useState<Blob | null>(null);
+export default function useFetchJSON<Type>(url: string): [Type | null, Error | null] {
+    const [data, setData] = useState<Type | null>(null);
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
@@ -10,22 +10,22 @@ export default function useFetchBlob(url: string): [Blob | null, Error | null] {
         fetch(url)
             .then((res) => {
                 if (res.ok) {
-                    return res.blob();
+                    return res.json();
                 }
 
                 throw new Error("Ошибка запроса");
             })
             .then(
-                (blob) => {
+                (data) => {
                     if (!ignore) {
-                        setBlob(blob);
+                        setData(data);
                         setError(null);
                     }
                 },
                 (error) => {
                     if (!ignore) {
                         setError(error);
-                        setBlob(null);
+                        setData(null);
                     }
                 }
             )
@@ -35,5 +35,5 @@ export default function useFetchBlob(url: string): [Blob | null, Error | null] {
         };
     }, [url]);
 
-    return [blob, error];
+    return [data, error];
 };

@@ -10,14 +10,14 @@ export default function UploadFile() {
   const uploadFile = useCallback(async (file: File) => {
     if (file.type.includes('mp4') || file.type.includes('avi')) {
       const formData = new FormData();
-  
+
       formData.set('file', file, file.name);
-  
+
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       });
-  
+
       if (response.ok) {
         const data = await response.json();
         navigate('/preview/' + data.file_id);
@@ -32,7 +32,7 @@ export default function UploadFile() {
     if (inputFile.current && inputFile.current.files) {
       uploadFile(inputFile.current.files[0]);
     }
-  }, []);
+  }, [uploadFile]);
 
   const handleDragEnter = useCallback(() => {
     setDragEntered(true);
@@ -51,7 +51,7 @@ export default function UploadFile() {
     event.preventDefault();
     uploadFile(event.dataTransfer.files[0]);
     setDragEntered(false);
-  }, []);
+  }, [uploadFile]);
 
   const dragAreaDisplay = dragEntered ? "" : "none";
 

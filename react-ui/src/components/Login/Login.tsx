@@ -1,28 +1,36 @@
-import React, { useEffect, useState } from "react";
-import "./Login.css"
+import { FormEvent, useCallback, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "./Login.css";
+import User from "../../UserInterface";
 
-export const Login = () => {
-    const [username, setUsername] = useState('')
-    const [password, setPassword] = useState('')
-    const [formCorrect, setFormCorrect] = useState(false)
-    const [loginError, setLoginError] = useState(false)
+interface LoginProps {
+    setUser: (user: User) => void;
+}
 
-    useEffect(() => {
-        if (username && password) setFormCorrect(true)
-        else setFormCorrect(false)
-    }, [username, password])
+export default function Login({ setUser }: LoginProps) {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [loginError, setLoginError] = useState(false);
+    const navigate = useNavigate();
 
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault()
-        fetch('/api/login', {
+    const handleSubmit = useCallback(async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        const response = await fetch('/api/login', {
             method: 'POST',
             body: new FormData(event.currentTarget)
-        }).then((res) => {
-            if (res.ok)
-                document.location.href = "/"
-            else setLoginError(true)
-        })
-    }
+        });
+
+        if (response.ok) {
+            const user = await response.json();
+            setUser(user);
+            navigate(-1);
+        } else {
+            setLoginError(true);
+        }
+    }, [navigate, setUser]);
+
+    const formCorrect = username && password ? true : false;
 
     return (
         <>
