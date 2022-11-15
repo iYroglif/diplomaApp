@@ -13,5 +13,5 @@ export const TaskRow = ({ id, file_name, file_size, date }: TaskRowProps) => {
                 </a>
             </td>
         </tr>
-    )
+    );
 }

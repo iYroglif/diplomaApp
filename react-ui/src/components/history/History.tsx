@@ -1,27 +1,18 @@
-import { useEffect, useState } from "react";
 import { TaskRow } from "./TaskRow";
 import "./History.css";
 import TaskRowProps from "./TaskRowPropsInterface";
+import useFetchJSON from "../../useFetchJSON";
 
 export default function History() {
-    const [rows, setRows] = useState<JSX.Element[]>([])
+    const [data, error] = useFetchJSON<{ tasks: [] }>('/api/history');
 
-    useEffect(() => {
-        fetch('/api/history')
-            .then((res) => {
-                if (res.ok)
-                    return res.json()
-            })
-            .then((data) => {
-                const tempRows: JSX.Element[] = []
-                data.tasks.forEach((row: TaskRowProps) => {
-                    tempRows.push(
-                        <TaskRow {...row} />
-                    )
-                });
-                setRows(tempRows)
-            })
-    }, [])
+    let rows: JSX.Element[] = [];
+
+    if (!error && data !== null) {
+        rows = data.tasks.map((row: TaskRowProps) => {
+            return <TaskRow key={row.id} {...row} />;
+        });
+    }
 
     return (
         <div className="history">

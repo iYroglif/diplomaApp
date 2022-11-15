@@ -7,11 +7,11 @@ import Preview from "./components/Preview/Preview";
 import Download from "./components/Download/Download";
 import Login from "./components/Login/Login";
 import Register from './components/Register/Register';
+import Logout from "./components/Logout";
 import History from "./components/History/History";
-import { Footer } from "./components/Footer";
-import { About } from "./components/About";
-import { Logout } from "./components/Logout";
-import { NotFound } from "./components/NotFound";
+import About from "./components/About/About";
+import Footer from "./components/Footer/Footer";
+import NotFound from "./components/NotFound/NotFound";
 import User from "./UserInterface";
 import useFetchJSON from "./useFetchJSON";
 

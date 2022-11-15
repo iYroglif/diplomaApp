@@ -1,6 +1,6 @@
-import "./Footer.css"
+import "./Footer.css";
 
-export const Footer = () => {
+export default function Footer() {
     return (
         <footer>
             <div className="vkrb">Выпускная квалификационная работа бакалавра</div>

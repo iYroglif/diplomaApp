@@ -1,20 +1,19 @@
-import { useEffect, useState } from "react"
-import { Navigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 
-export const Logout = () => {
-    const [isLogout, setIsLogout] = useState(false)
+export default function Logout() {
+    const navigate = useNavigate();
 
-    useEffect(() => {
-        fetch('/api/logout').then(() => setIsLogout(true))
-    }, [])
+    const logout = async () => {
+        const response = await fetch('/api/logout');
+
+        if (response.ok) {
+            navigate(-1);
+        }
+    };
+
+    logout();
 
     return (
-        <>
-            {isLogout ? (
-                <Navigate replace to='/' />
-            ) : (
-                <p>Производится выход...</p>
-            )}
-        </>
-    )
+        <p>Производится выход...</p>
+    );
 }

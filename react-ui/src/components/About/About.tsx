@@ -1,6 +1,6 @@
-import "./About.css"
+import "./About.css";
 
-export const About = () => {
+export default function About() {
     return (
         <div className="about">
             <h5>Архитектура нейронной сети</h5>
@@ -60,5 +60,5 @@ export const About = () => {
             <img src="/dataset3.png" width={700} />
             <img src="/dataset4.png" width={700} />
         </div>
-    )
+    );
 } 
