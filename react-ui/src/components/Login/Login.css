@@ -1,12 +1,11 @@
-.form-log {
+.form-login {
     margin-top: 20px;
-    width: 300px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-around;
 }
 
-.btn-log {
+.button-login {
     margin-top: 10px;
 }

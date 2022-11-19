@@ -3,6 +3,6 @@ import "./NotFound.css";
 export default function NotFound() {
 
     return (
-        <p>Страница не найдена</p>
+        <div className="not-found">Страница не найдена</div>
     )
 }

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import "./Title.css";
 
 export default function Title() {
     return (

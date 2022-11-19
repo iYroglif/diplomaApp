@@ -1,12 +1,18 @@
 import { useNavigate } from "react-router-dom";
+import "./Logout.css";
 
-export default function Logout() {
+interface LogoutProps {
+    setUser: (user: null) => void;
+}
+
+export default function Logout({ setUser }: LogoutProps) {
     const navigate = useNavigate();
 
     const logout = async () => {
         const response = await fetch('/api/logout');
 
         if (response.ok) {
+            setUser(null);
             navigate(-1);
         }
     };
@@ -14,6 +20,6 @@ export default function Logout() {
     logout();
 
     return (
-        <p>Производится выход...</p>
+        <div className="logout">Производится выход...</div>
     );
 }

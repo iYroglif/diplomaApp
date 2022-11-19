@@ -1,14 +1,13 @@
+import { NavLink } from "react-router-dom";
 import ButtonProps from "../Button/ButtonPropsInterface";
-import Button from "../Button/Button"
+import "./ActiveButton.css";
 
-interface ActiveButtonProps extends ButtonProps{
-    active: boolean
-}
-
-export default function ActiveButton({ active, className, ...props }: ActiveButtonProps) {
-    const newClassName = active ? className + " active" : className;
-
+export default function ActiveButton({ name, link, className }: ButtonProps) {
     return (
-        <Button className={newClassName} {...props} />
+        <NavLink className={({ isActive }) =>
+            isActive ? "button " + className + " active" : "button " + className
+        } to={link}>
+            {name}
+        </NavLink>
     );
 }

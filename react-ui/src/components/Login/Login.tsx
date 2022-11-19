@@ -34,14 +34,15 @@ export default function Login({ setUser }: LoginProps) {
 
     return (
         <>
-            <form className="form-log" onSubmit={handleSubmit} onChange={() => setLoginError(false)}>
+            <form className="form-login" onSubmit={handleSubmit} onChange={() => setLoginError(false)}>
                 <div className="form-group">
                     <label htmlFor="username">Имя пользователя</label>
                     <input className="form-control" type="text" id="username" name="username" value={username} onChange={(e) => setUsername(e.target.value)}></input>
+
                     <label htmlFor="password">Пароль</label>
                     <input className="form-control" type="password" id="password" name="password" value={password} onChange={(e) => setPassword(e.target.value)}></input>
                 </div>
-                <button className="btn btn-success btn-log" type="submit" disabled={!formCorrect || loginError}>Войти</button>
+                <button className="button-login" type="submit" disabled={!formCorrect || loginError}>Войти</button>
             </form>
             {loginError && (<p>Неверный логин или пароль</p>)}
         </>

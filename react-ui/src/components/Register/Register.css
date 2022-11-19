@@ -1,6 +1,5 @@
-.form-reg {
+.form-registration {
     margin-top: 20px;
-    width: 80%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -10,9 +9,8 @@
 .form-group {
     display: flex;
     flex-direction: column;
-
 }
 
-.btn-reg {
+.button-registration {
     margin-top: 10px;
 }

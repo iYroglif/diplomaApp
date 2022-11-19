@@ -1,11 +1,11 @@
-import "./Navigation.css"
-import User from "../../UserInterface"
-import Button from "./Button/Button"
+import "./Navigation.css";
+import User from "../../UserInterface";
+import Button from "./Button/Button";
 import ActiveButton from "./ActiveButton/ActiveButton";
-import Title from "./Title/Title"
+import Title from "./Title/Title";
 
 interface NavigationProps {
-    user: User | null
+    user: User | null;
 }
 
 export default function Navigation({ user }: NavigationProps) {
@@ -15,21 +15,21 @@ export default function Navigation({ user }: NavigationProps) {
                 <Title />
 
                 <div className="nav-links">
-                    <ActiveButton active={true} name="Удалить визуальный шум" link="/" className="nav-link-button" />
-                    <Button name="О системе" link="/about" className="nav-link-button" />
+                    <ActiveButton name="Удалить визуальный шум" link="/" className="nav-link" />
+                    <ActiveButton name="О системе" link="/about" className="nav-link" />
                 </div>
 
                 <div className="buttons">
                     {user ? (
                         <>
                             <span className="username">{user.username}</span>
-                            <Button name="История" link="/history" className="login-button" />
-                            <Button name="Выйти" link="/logout" className="register-button" />
+                            <Button name="История" link="/history" className="login" />
+                            <Button name="Выйти" link="/logout" className="register" />
                         </>
                     ) : (
                         <>
-                            <Button name="Вход" link="/login" className="login-button" />
-                            <Button name="Регистрация" link="/register" className="register-button" />
+                            <Button name="Вход" link="/login" className="login" />
+                            <Button name="Регистрация" link="/register" className="register" />
                         </>
                     )}
                 </div>

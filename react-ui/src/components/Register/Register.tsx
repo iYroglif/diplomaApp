@@ -26,7 +26,7 @@ export default function Register() {
 
     return (
         <>
-            <form className="form-reg" onSubmit={handleSubmit} onChange={() => setRegisterError(false)}>
+            <form className="form-registration" onSubmit={handleSubmit} onChange={() => setRegisterError(false)}>
                 <div className="form-group">
                     <label htmlFor="username">Имя пользователя</label>
                     <input className="form-control" type="text" id="username" name="username" value={userName} onChange={(e) => setUserName(e.target.value)}></input>
@@ -46,7 +46,7 @@ export default function Register() {
                     <label htmlFor="check_password">Повторите пароль</label>
                     <input className="form-control" type="password" id="check_password" value={secondPassword} onChange={(e) => setSecondPassword(e.target.value)}></input>
                 </div>
-                <button className="btn btn-success btn-reg" type="submit" disabled={registerError || !formCorrect}>Зарегистрироваться</button>
+                <button className="button-registration" type="submit" disabled={registerError || !formCorrect}>Зарегистрироваться</button>
             </form>
             {registerError && (<p>Данное имя пользователя уже занято. Введите другое</p>)}
         </>

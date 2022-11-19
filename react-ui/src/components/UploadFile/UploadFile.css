@@ -1,4 +1,4 @@
-.drag-area {
+.drop-area {
     position: absolute;
     background-color: rgba(0, 0, 0, 0.8);
     width: 100%;
@@ -19,17 +19,21 @@
     color: #272c30;
 }
 
-.drop-area {
+.drag-area {
+    width: 750px;
+    height: 250px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     background-color: rgb(41, 39, 39);
     border: 10px solid rgb(175, 168, 168);
     border-radius: 60px;
-    padding: 60px 180px;
 }
 
 .select-button {
+    width: 370px;
+    height: 100px;
     background-color: rgb(236, 18, 18);
     border: 5px solid rgb(200, 18, 18);
     color: white;
@@ -38,7 +42,12 @@
     font-weight: bold;
     display: flex;
     align-items: center;
+    justify-content: center;
     border-radius: 20px;
+}
+
+.select-button label {
+    cursor: pointer;
 }
 
 .select-button:hover {

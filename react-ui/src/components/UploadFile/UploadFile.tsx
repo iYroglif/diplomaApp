@@ -42,13 +42,9 @@ export default function UploadFile() {
     setDragEntered(false);
   }, []);
 
-  const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setDragEntered(true);
-  }, []);
-
   const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
+
     uploadFile(event.dataTransfer.files[0]);
     setDragEntered(false);
   }, [uploadFile]);
@@ -57,10 +53,9 @@ export default function UploadFile() {
 
   return (
     <>
-      <div className='drag-area'
+      <div className='drop-area'
         style={{ display: dragAreaDisplay }}
         onDragLeave={handleDragLeave}
-        onDragOver={handleDragOver}
         onDrop={handleDrop}>
         Отпустите файл
       </div>
@@ -70,14 +65,11 @@ export default function UploadFile() {
         <h2 className='func-name'>Удалить визуальный шум из видео</h2>
         <h3 className='func-desc'>Загрузите видеофайл, чтобы нейросеть удалила из него гауссовский шум</h3>
 
-        <div className='drop-area'
+        <div className='drag-area'
           onDragEnter={handleDragEnter}>
 
           <div className='select-button'>
-            <label htmlFor='inputFile'
-              style={{ cursor: 'pointer', padding: '25px 80px' }}>
-              Выбрать файл
-            </label>
+            <label htmlFor='inputFile'>Выбрать файл</label>
 
             <input id='inputFile'
               ref={inputFile}

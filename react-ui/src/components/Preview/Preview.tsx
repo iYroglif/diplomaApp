@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import calcFileSize from "../calcFileSize";
 import useFetchBlob from "./useFetchBlob";
 import "./Preview.css";
 import Processing from "./Processing/Processing";
+import useFetchJSON from "../../useFetchJSON";
 
 interface FileProps {
     name: string;
@@ -15,40 +16,10 @@ interface FileProps {
 
 export default function Preview() {
     const params = useParams();
-    const [fileProps, setFileProps] = useState<FileProps | null>(null);
+    const [fileProps, filePropsError] = useFetchJSON<FileProps>('/api/file-props/' + params.fileId);
     const [imgOrig, imgOrigError] = useFetchBlob('/api/file-preview/' + params.fileId);
     const [imgDen, imgDenError] = useFetchBlob('/api/file-preview-denoised/' + params.fileId);
     const [isSubmitted, setIsSubmitted] = useState(false);
-
-    useEffect(() => {
-        let ignore = false;
-
-        fetch('/api/file-props/' + params.fileId)
-            .then((res) => {
-                if (res.ok)
-                    return res.json();
-                else
-                    throw new Error('Файл не найден');
-            })
-            .then(
-                (data) => {
-                    if (!ignore) {
-                        setFileProps(data);
-                    }
-                },
-                (e) => {
-                    if (!ignore) {
-                        setFileProps(null);
-                        console.error(e);
-                        // @TODO обработка того что файл не найден на сервере
-                    }
-                }
-            )
-
-        return () => {
-            ignore = true;
-        };
-    }, [params.fileId])
 
     let imgOrigUrl = null;
     if (imgOrigError) {
@@ -68,7 +39,7 @@ export default function Preview() {
 
     return (
         <>
-            {params.fileId && fileProps ? (
+            {params.fileId && fileProps && !filePropsError ? (
                 <>
                     {isSubmitted ? (
                         <Processing fileId={params.fileId} />

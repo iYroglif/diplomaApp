@@ -1,28 +1,15 @@
 footer {
-    display: flex;
-    align-items: center;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
     height: 60px;
+    padding-left: 15px;
+    padding-right: 15px;
     background-color: rgb(236, 228, 228);
     color: rgb(65, 65, 65);
-}
-
-.vkrb {
-    flex: 1;
-    margin-left: 15px;
+    display: flex;
+    align-items: center;
 }
 
 .mgtu {
+    flex: auto;
     display: flex;
     justify-content: center;
-    flex: 1;
-}
-
-.student {
-    display: flex;
-    justify-content: flex-end;
-    flex: 1;
-    margin-right: 15px;
 }
