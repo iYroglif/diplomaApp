@@ -15,18 +15,16 @@ export default function History() {
     }
 
     return (
-        <div className="history">
-            <table className="table">
-                <thead className="table table-striped">
-                    <tr>
-                        <th scope="col">Название файла</th>
-                        <th scope="col">Размер</th>
-                        <th scope="col">Дата и время</th>
-                        <th scope="col"></th>
-                    </tr>
-                </thead>
-                <tbody>{rows}</tbody>
-            </table>
-        </div>
+        <table className="history">
+            <thead>
+                <tr>
+                    <th scope="col">Название файла</th>
+                    <th scope="col">Размер</th>
+                    <th scope="col">Дата и время</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>{rows}</tbody>
+        </table>
     );
 }

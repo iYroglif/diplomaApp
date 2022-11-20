@@ -5,12 +5,6 @@
     height: 100%;
 }
 
-.upload-file {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
 .func-name {
     font-size: xx-large;
 }
@@ -22,13 +16,13 @@
 .drag-area {
     width: 750px;
     height: 250px;
+    background-color: rgb(41, 39, 39);
+    border: 10px solid rgb(175, 168, 168);
+    border-radius: 60px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background-color: rgb(41, 39, 39);
-    border: 10px solid rgb(175, 168, 168);
-    border-radius: 60px;
 }
 
 .select-button {
@@ -36,18 +30,20 @@
     height: 100px;
     background-color: rgb(236, 18, 18);
     border: 5px solid rgb(200, 18, 18);
+    border-radius: 20px;
     color: white;
     cursor: pointer;
     font-size: 30px;
     font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 20px;
 }
 
 .select-button label {
+    height: 100%;
+    width: 100%;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .select-button:hover {
@@ -56,4 +52,8 @@
 
 .drop-text {
     color: whitesmoke;
+}
+
+#inputFile {
+    display: none;
 }

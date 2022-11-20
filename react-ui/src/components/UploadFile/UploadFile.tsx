@@ -56,36 +56,30 @@ export default function UploadFile() {
       <div className='drop-area'
         style={{ display: dragAreaDisplay }}
         onDragLeave={handleDragLeave}
-        onDrop={handleDrop}>
-        Отпустите файл
-      </div>
+        onDrop={handleDrop} />
 
-      <div className='upload-file'>
+      <h2 className='func-name'>Удалить визуальный шум из видео</h2>
+      <h3 className='func-desc'>Загрузите видеофайл, чтобы нейросеть удалила из него гауссовский шум</h3>
 
-        <h2 className='func-name'>Удалить визуальный шум из видео</h2>
-        <h3 className='func-desc'>Загрузите видеофайл, чтобы нейросеть удалила из него гауссовский шум</h3>
+      <div className='drag-area'
+        onDragEnter={handleDragEnter}>
 
-        <div className='drag-area'
-          onDragEnter={handleDragEnter}>
+        <div className='select-button'>
+          <label htmlFor='inputFile'>Выбрать файл</label>
 
-          <div className='select-button'>
-            <label htmlFor='inputFile'>Выбрать файл</label>
-
-            <input id='inputFile'
-              ref={inputFile}
-              type='file'
-              onChange={handleChange}
-              multiple={false}
-              accept='video/*'
-              style={{ display: 'none' }}>
-            </input>
-          </div>
-
-          <span className='drop-text'>или просто перетащите файл</span>
+          <input id='inputFile'
+            ref={inputFile}
+            type='file'
+            onChange={handleChange}
+            multiple={false}
+            accept='.mp4,.avi'>
+          </input>
         </div>
 
-        <p>на данный момент поддерживаются форматы mp4 и avi</p>
+        <span className='drop-text'>или просто перетащите файл</span>
       </div>
+
+      <p>на данный момент поддерживаются форматы mp4 и avi</p>
     </>
   );
 }

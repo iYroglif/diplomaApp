@@ -1,11 +1,13 @@
 .progress {
+    width: 70%;
     display: flex;
     flex-direction: column;
+    align-items: center;
     justify-content: space-around;
-    width: 80%;
 }
 
 .meter {
+    height: 25px;
     width: 100%;
     background-color: lightgray;
     border: 5px;
@@ -14,5 +16,11 @@
 }
 
 .curr-prog {
+    height: 100%;
     background-color: lightskyblue;
+}
+
+.current-progress-text {
+    position: relative;
+    bottom: 25px;
 }

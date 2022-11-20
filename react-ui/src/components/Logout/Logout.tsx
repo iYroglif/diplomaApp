@@ -13,7 +13,7 @@ export default function Logout({ setUser }: LogoutProps) {
 
         if (response.ok) {
             setUser(null);
-            navigate(-1);
+            navigate("/");
         }
     };
 

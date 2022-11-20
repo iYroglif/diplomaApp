@@ -20,27 +20,14 @@
     justify-content: center;
 }
 
-.login:hover {
-    background-color: rgba(0, 0, 0, 0.8);
-    color: white;
-}
-
 .register {
     width: 120px;
     background-color: rgb(211, 67, 56);
     justify-content: center;
 }
 
+.login:hover,
 .register:hover {
     background-color: rgba(0, 0, 0, 0.8);
     color: white;
-}
-
-
-
-.username {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-right: 30px;
 }

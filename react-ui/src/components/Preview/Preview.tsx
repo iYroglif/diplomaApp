@@ -44,7 +44,7 @@ export default function Preview() {
                     {isSubmitted ? (
                         <Processing fileId={params.fileId} />
                     ) : (
-                        <div className="preview">
+                        <>
                             <div className="preview-imgs">
                                 <div className="file-preview">
                                     <p>Имя файла: {fileProps.name}</p>
@@ -54,13 +54,13 @@ export default function Preview() {
                                 <div className="file-preview-denoised">
                                     <p>Превью обработки файла:</p>
                                     {imgDenUrl && (<img src={imgDenUrl} alt="Обработанный кадр" />)}
+                                    <div className="preview-subm">
+                                        <p>Примерное время обработки: {Math.round(fileProps.height * fileProps.width * fileProps.numframes / 103000)} секунд</p>
+                                        <div className="btn-start" onClick={() => setIsSubmitted(true)}>Удалить шум</div>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="preview-subm">
-                                <p>Примерное время обработки: {Math.round(fileProps.height * fileProps.width * fileProps.numframes / 103000)} секунд</p>
-                                <div className="btn-start" onClick={() => setIsSubmitted(true)}>Удалить шум</div>
-                            </div>
-                        </div>
+                        </>
                     )}
                 </>
             ) : (

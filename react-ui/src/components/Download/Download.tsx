@@ -12,12 +12,12 @@ export default function Download() {
     return (
         <>
             {params.fileId ? (
-                <div className="download">
+                <>
                     <h3>Скачивание файла начнется автоматически, если нет нажмите на кнопку:</h3>
-                    <a className="link" href={"/api/download/" + params.fileId}>
-                        <div className="download-btn">Скачать файл</div>
+                    <a className="download-btn" href={"/api/download/" + params.fileId}>
+                        Скачать файл
                     </a>
-                </div>
+                </>
             ) : (
                 <>
                     <p>Файл не существует</p>

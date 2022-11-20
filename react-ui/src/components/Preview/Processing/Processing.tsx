@@ -40,10 +40,10 @@ export default function Processing({ fileId }: { fileId: string }) {
       <div className="meter">
         <div className="curr-prog"
           style={{ width: `${currentProgress}%` }}>
-          {currentProgress}%
         </div>
+        <span className="current-progress-text">{currentProgress}%</span>
       </div>
-      <h3>Осталось времени: {timeLeft} секунд</h3>
+      <h3>Осталось времени: {timeLeft === Infinity ? " " : timeLeft} секунд</h3>
     </div>
   );
 }
