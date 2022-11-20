@@ -1,7 +1,7 @@
-import { ITask } from "../HistoryComponent"
-import { calcFileSize } from "../main/Preview"
+import TaskRowProps from "./TaskRowPropsInterface";
+import calcFileSize from "../calcFileSize";
 
-export const TaskRow = ({ id, file_name, file_size, date }: ITask) => {
+export const TaskRow = ({ id, file_name, file_size, date }: TaskRowProps) => {
     return (
         <tr>
             <td>{file_name}</td>
@@ -13,5 +13,5 @@ export const TaskRow = ({ id, file_name, file_size, date }: ITask) => {
                 </a>
             </td>
         </tr>
-    )
+    );
 }

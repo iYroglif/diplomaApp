@@ -1,0 +1,25 @@
+footer {
+    flex: 0 0 60px;
+    padding-left: 15px;
+    padding-right: 15px;
+    background-color: rgb(236, 228, 228);
+    color: rgb(65, 65, 65);
+    display: flex;
+    align-items: center;
+}
+
+.vkrb {
+    flex: 1;
+}
+
+.mgtu {
+    flex: auto;
+    display: flex;
+    justify-content: center;
+}
+
+.author {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}

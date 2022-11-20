@@ -1,0 +1,18 @@
+.download-btn {
+    text-decoration: none;
+    width: 190px;
+    height: 60px;
+    background-color: rgb(236, 18, 18);
+    color: white;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.download-btn:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}

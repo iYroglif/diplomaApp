@@ -1,0 +1,16 @@
+.form-registration {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.button-registration {
+    margin-top: 10px;
+}
