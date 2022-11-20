@@ -42,6 +42,11 @@ export default function UploadFile() {
     setDragEntered(false);
   }, []);
 
+  const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setDragEntered(true);
+  }, []);
+
   const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
 
@@ -56,6 +61,7 @@ export default function UploadFile() {
       <div className='drop-area'
         style={{ display: dragAreaDisplay }}
         onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
         onDrop={handleDrop} />
 
       <h2 className='func-name'>Удалить визуальный шум из видео</h2>
