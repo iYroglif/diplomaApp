@@ -1,7 +1,7 @@
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.http.response import HttpResponse, StreamingHttpResponse, HttpResponseRedirect
 from django.views.decorators.gzip import gzip_page
-from .models import UserTask, ClassUser
+from .models import UserTask, ClassUser, ClassUserTask
 from http import HTTPStatus
 from django.http import JsonResponse
 from cv2 import VideoCapture
@@ -15,6 +15,7 @@ def upload(request):
         if request.FILES['file'] is not None:
             if request.FILES['file'].content_type == 'video/mp4' or request.FILES['file'].content_type == 'video/avi':
                 if request.user.is_authenticated:
+                    userTask = ClassUserTask()
                     userTask = UserTask.create(request.user.pk, request.COOKIES["csrftoken"], request.FILES['file'],
                                                request.FILES['file'].content_type, request.FILES['file'].name, request.FILES['file'].size)
                 else:

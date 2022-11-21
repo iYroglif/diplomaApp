@@ -12,6 +12,26 @@ model, device = load_model()
 
 # Create your models here.
 
+class ClassUserTask():
+    def __init__(self, user_id=None, user_token=None, file=None, content_type=None, file_name=None, file_size=None, file_width=None, file_height=None, file_fps=None, file_numframes=None, date=None):
+        self.user_id = user_id
+        self.user_token = user_token
+        self.file = file
+        self.content_type = content_type
+        self.file_name = file_name
+        self.file_size = file_size
+        self.file_width = file_width
+        self.file_height = file_height
+        self.file_fps = file_fps
+        self.file_numframes = file_numframes
+        self.date = date
+
+    def create(self):
+        UserTaskMapper.insert(self)
+
+
+
+
 
 class UserTask(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
@@ -203,17 +223,18 @@ class UserTaskMapper:
         return UserTask.objects.filter(user_id=user_id)
 
     @staticmethod
-    def insert(user_id, user_token, file=None, content_type=None, file_name=None, file_size=None):
+    def insert(userTask):
         create = partial(UserTask.objects.create,
-                         user_id=user_id, user_token=user_token)
-        if file is not None:
-            create = partial(create, file=file)
-        if content_type is not None:
-            create = partial(create, content_type=content_type)
-        if file_name is not None:
-            create = partial(create, file_name=file_name)
-        if file_size is not None:
-            create = partial(create, file_size=file_size)
+                         user_id=userTask.user_id, user_token=userTask.user_token)
+        if userTask.file is not None:
+            create = partial(create, file=userTask.file)
+        if userTask.content_type is not None:
+            create = partial(create, content_type=userTask.content_type)
+        if userTask.file_name is not None:
+            create = partial(create, file_name=userTask.file_name)
+        if userTask.file_size is not None:
+            create = partial(create, file_size=userTask.file_size)
 
-        userTask = create()
-        return userTask
+        # userTask = create()
+        # return userTask
+        return
