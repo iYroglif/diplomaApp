@@ -15,12 +15,21 @@ def upload(request):
         if request.FILES['file'] is not None:
             if request.FILES['file'].content_type == 'video/mp4' or request.FILES['file'].content_type == 'video/avi':
                 if request.user.is_authenticated:
-                    userTask = ClassUserTask()
-                    userTask = UserTask.create(request.user.pk, request.COOKIES["csrftoken"], request.FILES['file'],
-                                               request.FILES['file'].content_type, request.FILES['file'].name, request.FILES['file'].size)
+                    userTask = ClassUserTask(user_id=request.user.pk,
+                        user_token=request.COOKIES["csrftoken"],
+                        file=request.FILES['file'],
+                        content_type=request.FILES['file'].content_type,
+                        file_name=request.FILES['file'].name,
+                        file_size=request.FILES['file'].size)
+                    # userTask = UserTask.create(request.user.pk, request.COOKIES["csrftoken"], request.FILES['file'],
+                    #                            request.FILES['file'].content_type, request.FILES['file'].name, request.FILES['file'].size)
+                    userTask.create()
                 else:
-                    userTask, created = UserTask.get_or_create(
-                        user_id=None, user_token=request.COOKIES["csrftoken"])
+                    userTask = ClassUserTask(user_token=request.COOKIES["csrftoken"])
+                    # userTask, created = UserTask.get_or_create(
+                    #     user_id=None, user_token=request.COOKIES["csrftoken"])
+                    created = userTask.get_or_create()
+                    # убрать удаление файла
                     if not created:
                         userTask.file.delete()
                     userTask.file = request.FILES['file']
@@ -35,7 +44,7 @@ def upload(request):
                 userTask.file_numframes = int(vid.get(7))
                 userTask.save()
                 vid.release()
-                return JsonResponse({'file_id': userTask.pk})
+                return JsonResponse({'file_id': userTask.id})
             else:
                 return HttpResponse(status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
         else:
@@ -47,11 +56,15 @@ def upload(request):
 def getFileProps(request, file_id):
     if request.method == 'GET':
         if request.user.is_authenticated:
-            fileProps = UserTask.file_props_to_dict(
-                file_id, user_id=request.user.pk)
+            userTask = ClassUserTask(id=file_id)
+            # fileProps = UserTask.file_props_to_dict(
+            #     file_id, user_id=request.user.pk)
+            fileProps = userTask.file_props_to_dict()
         else:
-            fileProps = UserTask.file_props_to_dict(
-                file_id, user_token=request.COOKIES["csrftoken"])
+            userTask = ClassUserTask(id=file_id, user_token=request.COOKIES["csrftoken"])
+            # fileProps = UserTask.file_props_to_dict(
+            #     file_id, user_token=request.COOKIES["csrftoken"])
+            fileProps = userTask.file_props_to_dict()
         if fileProps is not None:
             return JsonResponse(fileProps)
         else:
@@ -63,10 +76,14 @@ def getFileProps(request, file_id):
 def getFilePreview(request, file_id):
     if request.method == 'GET':
         if request.user.is_authenticated:
-            frame = UserTask.get_frame(file_id, user_id=request.user.pk)
+            userTask = ClassUserTask(file_id, user_id=request.user.pk)
+            # frame = UserTask.get_frame(file_id, user_id=request.user.pk)
+            frame = userTask.get_frame()
         else:
-            frame = UserTask.get_frame(
-                file_id, user_token=request.COOKIES["csrftoken"])
+            userTask = ClassUserTask(file_id, user_token=request.COOKIES["csrftoken"])
+            # frame = UserTask.get_frame(
+            #     file_id, user_token=request.COOKIES["csrftoken"])
+            frame = userTask.get_frame()
         if frame is not None:
             return HttpResponse(frame.tobytes(), content_type='image/jpeg')
         else:
@@ -78,11 +95,15 @@ def getFilePreview(request, file_id):
 def getFilePreviewDenoised(request, file_id):
     if request.method == 'GET':
         if request.user.is_authenticated:
-            den_frame = UserTask.get_denoised_frame(
-                file_id, user_id=request.user.pk)
+            userTask = ClassUserTask(file_id, user_id=request.user.pk)
+            # den_frame = UserTask.get_denoised_frame(
+            #     file_id, user_id=request.user.pk)
+            den_frame = userTask.get_denoised_frame()
         else:
-            den_frame = UserTask.get_denoised_frame(
-                file_id, user_token=request.COOKIES["csrftoken"])
+            userTask = ClassUserTask(file_id, user_token=request.COOKIES["csrftoken"])
+            # den_frame = UserTask.get_denoised_frame(
+            #     file_id, user_token=request.COOKIES["csrftoken"])
+            den_frame = userTask.get_denoised_frame()
         if den_frame is not None:
             return HttpResponse(den_frame.tobytes(), content_type='image/jpeg')
         else:
@@ -93,10 +114,14 @@ def getFilePreviewDenoised(request, file_id):
 
 def progress(request, file_id):
     if request.user.is_authenticated:
-        userTask = UserTask.get_UserTask(file_id, user_id=request.user.pk)
+        userTask = ClassUserTask(file_id, user_id=request.user.pk)
+        # userTask = UserTask.get_UserTask(file_id, user_id=request.user.pk)
+        userTask.get_UserTask()
     else:
-        userTask = UserTask.get_UserTask(
-            file_id, user_token=request.COOKIES["csrftoken"])
+        userTask = ClassUserTask(file_id, user_token=request.COOKIES["csrftoken"])
+        # userTask = UserTask.get_UserTask(
+        #     file_id, user_token=request.COOKIES["csrftoken"])
+        userTask.get_UserTask()
     if userTask is not None:
         return StreamingHttpResponse(userTask.processing(), content_type='text/event-stream')
     else:

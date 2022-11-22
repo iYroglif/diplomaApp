@@ -13,7 +13,8 @@ model, device = load_model()
 # Create your models here.
 
 class ClassUserTask():
-    def __init__(self, user_id=None, user_token=None, file=None, content_type=None, file_name=None, file_size=None, file_width=None, file_height=None, file_fps=None, file_numframes=None, date=None):
+    def __init__(self, id=None, user_id=None, user_token=None, file=None, content_type=None, file_name=None, file_size=None, file_width=None, file_height=None, file_fps=None, file_numframes=None, date=None):
+        self.id = id
         self.user_id = user_id
         self.user_token = user_token
         self.file = file
@@ -26,11 +27,108 @@ class ClassUserTask():
         self.file_numframes = file_numframes
         self.date = date
 
+    def updateValues(self, userTask):
+        self.id = userTask.pk
+        self.user_id = userTask.user_id
+        self.user_token = userTask.user_token
+        self.file = userTask.file
+        self.content_type = userTask.content_type
+        self.file_name = userTask.file_name
+        self.file_size = userTask.file_size
+        self.file_width = userTask.file_width
+        self.file_height = userTask.file_height
+        self.file_fps = userTask.file_fps
+        self.file_numframes = userTask.file_numframes
+        self.date = userTask.date
+        self.userTask = userTask
+
     def create(self):
-        UserTaskMapper.insert(self)
+        userTask = UserTaskMapper.insert(self)
+        self.updateValues(userTask)
 
+    def get_or_create(self):
+        try:
+            userTask = UserTaskMapper.get(self)
+            self.updateValues(userTask)
+            return False
+        except:
+            userTask = UserTaskMapper.insert(self)
+            self.updateValues(userTask)
+            return True
+    
+    def save(self):
+        # реализовать метод в маппере
+        self.userTask.update(user_id=self.user_id,
+            user_token=self.user_token,
+            file=self.file,
+            content_type=self.content_type,
+            file_name=self.file_name,
+            file_size=self.file_size,
+            file_width=self.file_width,
+            file_height=self.file_height,
+            file_fps=self.file_fps,
+            file_numframes=self.file_numframes,
+            date=self.date)
 
+    def file_props_to_dict(self):
+        userTask = UserTaskMapper.get(self)
+        if userTask is not None:
+            self.updateValues(userTask)
+            return {'name': self.file_name, 'size': self.file_size, 'width': self.file_width, 'height': self.file_height, 'numframes': self.file_numframes}
+        else:
+            return None
 
+    def get_frame(self):
+        userTask = UserTaskMapper.get(self)
+        if userTask is not None:
+            self.updateValues(userTask)
+            vid = VideoCapture(self.file.name)
+            _, frame = vid.read()
+            _, frame = imencode('.jpg', frame)
+            vid.release()
+            return frame
+        else:
+            return None
+
+    def get_denoised_frame(self):
+        userTask = UserTaskMapper.get(self)
+
+        if userTask is not None:
+            self.updateValues(userTask)
+            vid = VideoCapture(self.file.name)
+
+            for den_frame, _ in denoise(model, device, vid):
+                _, den_frame = imencode('.jpg', den_frame)
+                break
+
+            vid.release()
+            return den_frame
+        else:
+            return None
+
+    def get_UserTask(self):
+        userTask = UserTaskMapper.get(self)
+        self.updateValues(userTask)
+        return 
+
+    def file_to_response(self):
+        userTask = UserTaskMapper.get(self)
+
+        if userTask is not None:
+            self.updateValues(userTask)
+            s_fp = self.file.name.rsplit('/')
+            ofp = s_fp[0] + '/denoised/' + str(self.id) + s_fp[1]
+            if exists(ofp):
+                self.file.delete()
+                self.file = ofp
+                self.save()
+            response = HttpResponse(
+                self.file, self=userTask.content_type)
+            response['Content-Disposition'] = "attachment; filename=denoised_" + \
+                self.file_name
+            return response
+        else:
+            return None
 
 
 class UserTask(models.Model):
@@ -207,14 +305,14 @@ class UserMapper:
 
 class UserTaskMapper:
     @staticmethod
-    def get(user_id=None, user_token=None, id=None):
+    def get(userTask):
         get = UserTask.objects.get
-        if user_id is not None:
-            get = partial(get, user_id=user_id)
-        if user_token is not None:
-            get = partial(get, user_token=user_token)
-        if id is not None:
-            get = partial(get, id=id)
+        if userTask.user_id is not None:
+            get = partial(get, user_id=userTask.user_id)
+        if userTask.user_token is not None:
+            get = partial(get, user_token=userTask.user_token)
+        if userTask.id is not None:
+            get = partial(get, id=userTask.id)
 
         return get()
 
@@ -235,6 +333,5 @@ class UserTaskMapper:
         if userTask.file_size is not None:
             create = partial(create, file_size=userTask.file_size)
 
-        # userTask = create()
-        # return userTask
-        return
+        userTask = create()
+        return userTask
