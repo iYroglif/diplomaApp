@@ -12,6 +12,7 @@ model, device = load_model()
 
 # Create your models here.
 
+
 class ClassUserTask():
     def __init__(self, id=None, user_id=None, user_token=None, file=None, content_type=None, file_name=None, file_size=None, file_width=None, file_height=None, file_fps=None, file_numframes=None, date=None):
         self.id = id
@@ -55,20 +56,9 @@ class ClassUserTask():
             userTask = UserTaskMapper.insert(self)
             self.updateValues(userTask)
             return True
-    
+
     def save(self):
-        # реализовать метод в маппере
-        self.userTask.update(user_id=self.user_id,
-            user_token=self.user_token,
-            file=self.file,
-            content_type=self.content_type,
-            file_name=self.file_name,
-            file_size=self.file_size,
-            file_width=self.file_width,
-            file_height=self.file_height,
-            file_fps=self.file_fps,
-            file_numframes=self.file_numframes,
-            date=self.date)
+        UserTaskMapper.update(self)
 
     def file_props_to_dict(self):
         userTask = UserTaskMapper.get(self)
@@ -108,8 +98,11 @@ class ClassUserTask():
 
     def get_UserTask(self):
         userTask = UserTaskMapper.get(self)
-        self.updateValues(userTask)
-        return 
+        if userTask is not None:
+            self.updateValues(userTask)
+            return True
+        else:
+            return False
 
     def file_to_response(self):
         userTask = UserTaskMapper.get(self)
@@ -123,107 +116,15 @@ class ClassUserTask():
                 self.file = ofp
                 self.save()
             response = HttpResponse(
-                self.file, self=userTask.content_type)
+                self.file, content_type=self.content_type)
             response['Content-Disposition'] = "attachment; filename=denoised_" + \
                 self.file_name
             return response
         else:
             return None
 
-
-class UserTask(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             null=True, on_delete=models.CASCADE)
-    user_token = models.CharField(max_length=64)
-    file = models.FileField(upload_to='files/', null=True)
-    content_type = models.CharField(max_length=254, blank=True, default='')
-    file_name = models.CharField(max_length=254, blank=True, default='')
-    file_size = models.PositiveBigIntegerField(blank=True, default=0)
-    file_width = models.PositiveSmallIntegerField(blank=True, default=0)
-    file_height = models.PositiveSmallIntegerField(blank=True, default=0)
-    file_fps = models.PositiveSmallIntegerField(blank=True, default=0)
-    file_numframes = models.PositiveBigIntegerField(blank=True, default=0)
-    date = models.DateTimeField(auto_now=True)
-
-    @staticmethod
-    def create(user_id, cookie, file, content_type, name, size):
-        return UserTaskMapper.insert(user_id, cookie, file, content_type, name, size)
-
-    @staticmethod
-    def get_UserTask(file_id, user_id=None, user_token=None):
-        userTask = UserTaskMapper.get(
-            user_id=user_id, user_token=user_token, id=file_id)
-        return userTask
-
-    @staticmethod
-    def get_or_create(user_id, user_token):
-        try:
-            userTask = UserTaskMapper.get(
-                user_id=user_id, user_token=user_token)
-            return userTask, False
-        except:
-            return UserTaskMapper.insert(user_id=user_id, user_token=user_token), True
-
-    @staticmethod
-    def file_props_to_dict(file_id, user_id=None, user_token=None):
-        userTask = UserTaskMapper.get(
-            user_id=user_id, user_token=user_token, id=file_id)
-
-        if userTask is not None:
-            return {'name': userTask.file_name, 'size': userTask.file_size, 'width': userTask.file_width, 'height': userTask.file_height, 'numframes': userTask.file_numframes}
-        else:
-            return None
-
-    @staticmethod
-    def get_frame(file_id, user_id=None, user_token=None):
-        userTask = UserTaskMapper.get(
-            user_id=user_id, user_token=user_token, id=file_id)
-
-        if userTask is not None:
-            vid = VideoCapture(userTask.file.name)
-            _, frame = vid.read()
-            _, frame = imencode('.jpg', frame)
-            vid.release()
-            return frame
-        else:
-            return None
-
-    @staticmethod
-    def get_denoised_frame(file_id, user_id=None, user_token=None):
-        userTask = UserTaskMapper.get(
-            user_id=user_id, user_token=user_token, id=file_id)
-
-        if userTask is not None:
-            vid = VideoCapture(userTask.file.name)
-
-            for den_frame, _ in denoise(model, device, vid):
-                _, den_frame = imencode('.jpg', den_frame)
-                break
-
-            vid.release()
-            return den_frame
-        else:
-            return None
-
-    @staticmethod
-    def file_to_response(file_id, user_id=None, user_token=None):
-        userTask = UserTaskMapper.get(
-            user_id=user_id, user_token=user_token, id=file_id)
-
-        if userTask is not None:
-            s_fp = userTask.file.name.rsplit('/')
-            ofp = s_fp[0] + '/denoised/' + str(userTask.pk) + s_fp[1]
-            if exists(ofp):
-                userTask.file.delete()
-                userTask.file = ofp
-                userTask.save()
-            response = HttpResponse(
-                userTask.file, content_type=userTask.content_type)
-            response['Content-Disposition'] = "attachment; filename=denoised_" + \
-                userTask.file_name
-            return response
-        else:
-            return None
+    def getHistory(self):
+        return {'tasks': list(UserTaskMapper.getAll(self).order_by('-date').values('id', 'file_name', 'file_size', 'date'))}
 
     def processing(self):
         yield 'data:0\nid:0\n\n'
@@ -251,33 +152,31 @@ class UserTask(models.Model):
         o_vid.release()
         return
 
-    @staticmethod
-    def getHistory(user_id):
-        return {'tasks': list(UserTaskMapper.getAll(user_id).order_by('-date').values('id', 'file_name', 'file_size', 'date'))}
-
 
 class ClassUser(User):
-    def __init__(self, user):
+    def __init__(self, user=None, username=None, password=None, first_name=None, last_name=None, email=None):
         self.user = user
+        self.username = username
+        self.password = password
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
 
-    @staticmethod
-    def already_exists(username):
-        return UserMapper.get(username).exists()
+    def already_exists(self):
+        return UserMapper.get(self).exists()
 
-    @staticmethod
-    def create(username, password, first_name, last_name, email):
-        user = UserMapper.insert(
-            username, password, first_name, last_name, email)
-        return ClassUser(user)
+    def create(self):
+        user = UserMapper.insert(self)
+        self.user = user
 
     def is_authenticated(self):
         return self.user.is_authenticated
 
-    @staticmethod
-    def userAuthenticate(request, username, password):
-        user = authenticate(request, username=username, password=password)
+    def userAuthenticate(self, request):
+        user = authenticate(request, username=self.username,
+                            password=self.password)
         if user is not None:
-            return ClassUser(user)
+            return ClassUser(user=user)
         return None
 
     def userLogin(self, request):
@@ -292,13 +191,13 @@ class ClassUser(User):
 
 class UserMapper:
     @staticmethod
-    def get(username):
-        return User.objects.filter(username=username)
+    def get(user):
+        return User.objects.filter(username=user.username)
 
     @staticmethod
-    def insert(username, password, first_name, last_name, email):
+    def insert(user):
         user = User.objects.create_user(
-            username, password=password, first_name=first_name, last_name=last_name, email=email)
+            user.username, password=user.password, first_name=user.first_name, last_name=user.last_name, email=user.email)
         user.save()
         return user
 
@@ -314,11 +213,12 @@ class UserTaskMapper:
         if userTask.id is not None:
             get = partial(get, id=userTask.id)
 
-        return get()
+        userTask = get()
+        return userTask
 
     @staticmethod
-    def getAll(user_id):
-        return UserTask.objects.filter(user_id=user_id)
+    def getAll(userTask):
+        return UserTask.objects.filter(user_id=userTask.user_id)
 
     @staticmethod
     def insert(userTask):
@@ -335,3 +235,32 @@ class UserTaskMapper:
 
         userTask = create()
         return userTask
+
+    @staticmethod
+    def update(userTask):
+        record = userTask.userTask
+        record.file = userTask.file
+        record.content_type = userTask.content_type
+        record.file_name = userTask.file_name
+        record.file_size = userTask.file_size
+        record.file_width = userTask.file_width
+        record.file_height = userTask.file_height
+        record.file_fps = userTask.file_fps
+        record.file_numframes = userTask.file_numframes
+
+        record.save()
+
+
+class UserTask(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             null=True, on_delete=models.CASCADE)
+    user_token = models.CharField(max_length=64)
+    file = models.FileField(upload_to='files/', null=True)
+    content_type = models.CharField(max_length=254, blank=True, default='')
+    file_name = models.CharField(max_length=254, blank=True, default='')
+    file_size = models.PositiveBigIntegerField(blank=True, default=0)
+    file_width = models.PositiveSmallIntegerField(blank=True, default=0)
+    file_height = models.PositiveSmallIntegerField(blank=True, default=0)
+    file_fps = models.PositiveSmallIntegerField(blank=True, default=0)
+    file_numframes = models.PositiveBigIntegerField(blank=True, default=0)
+    date = models.DateTimeField(auto_now=True)
