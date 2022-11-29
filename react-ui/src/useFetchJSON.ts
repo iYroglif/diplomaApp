@@ -1,39 +1,39 @@
 import { useEffect, useState } from "react";
 
-export default function useFetchJSON<Type>(url: string): [Type | null, Error | null] {
-    const [data, setData] = useState<Type | null>(null);
-    const [error, setError] = useState<Error | null>(null);
+export const useFetchJSON = <Type>(url: string): [Type | undefined, Error | undefined] => {
+  const [data, setData] = useState<Type>();
+  const [error, setError] = useState<Error>();
 
-    useEffect(() => {
-        let ignore = false;
+  useEffect(() => {
+    let ignore = false;
 
-        fetch(url)
-            .then((res) => {
-                if (res.ok) {
-                    return res.json();
-                }
+    fetch(url)
+      .then((res) => {
+        if (res.ok) {
+          return res.json();
+        }
 
-                throw new Error("Ошибка запроса");
-            })
-            .then(
-                (data) => {
-                    if (!ignore) {
-                        setData(data);
-                        setError(null);
-                    }
-                },
-                (error) => {
-                    if (!ignore) {
-                        setError(error);
-                        setData(null);
-                    }
-                }
-            )
+        throw new Error("Ошибка запроса");
+      })
+      .then(
+        (data) => {
+          if (!ignore) {
+            setData(data);
+            setError(undefined);
+          }
+        },
+        (error) => {
+          if (!ignore) {
+            setError(error);
+            setData(undefined);
+          }
+        }
+      );
 
-        return () => {
-            ignore = true;
-        };
-    }, [url]);
+    return () => {
+      ignore = true;
+    };
+  }, [url]);
 
-    return [data, error];
+  return [data, error];
 };

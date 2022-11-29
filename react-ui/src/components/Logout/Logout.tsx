@@ -2,24 +2,23 @@ import { useNavigate } from "react-router-dom";
 import "./Logout.css";
 
 interface LogoutProps {
-    setUser: (user: null) => void;
+  setUser: (user: undefined) => void;
 }
 
 export default function Logout({ setUser }: LogoutProps) {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const logout = async () => {
-        const response = await fetch('/api/logout');
+  const logout = async () => {
+    const logoutUrl = "/api/logout";
+    const response = await fetch(logoutUrl);
 
-        if (response.ok) {
-            setUser(null);
-            navigate("/");
-        }
-    };
+    if (response.ok) {
+      setUser(undefined);
+      navigate("/");
+    }
+  };
 
-    logout();
+  logout();
 
-    return (
-        <div className="logout">Производится выход...</div>
-    );
+  return <div className="logout">Производится выход...</div>;
 }
