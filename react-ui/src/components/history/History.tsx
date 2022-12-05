@@ -1,30 +1,30 @@
 import { TaskRow } from "./TaskRow";
 import "./History.css";
-import TaskRowProps from "./TaskRowPropsInterface";
-import useFetchJSON from "../../useFetchJSON";
+import { TaskRowProps } from "./TaskRowPropsInterface";
+import { useFetchJSON } from "../../useFetchJSON";
+import { historyURL } from "../../api/urls";
 
-export default function History() {
-    const [data, error] = useFetchJSON<{ tasks: [] }>('/api/history');
+export const History = () => {
+  const [data, error] = useFetchJSON<{ tasks: [] }>(historyURL);
 
-    let rows: JSX.Element[] = [];
+  let rows: JSX.Element[] = [];
 
-    if (!error && data !== null) {
-        rows = data.tasks.map((row: TaskRowProps) => {
-            return <TaskRow key={row.id} {...row} />;
-        });
-    }
+  if (!error && data !== undefined) {
+    rows = data.tasks.map((row: TaskRowProps) => {
+      return <TaskRow key={row.id} {...row} />;
+    });
+  }
 
-    return (
-        <table className="history">
-            <thead>
-                <tr>
-                    <th scope="col">Название файла</th>
-                    <th scope="col">Размер</th>
-                    <th scope="col">Дата и время</th>
-                    <th scope="col"></th>
-                </tr>
-            </thead>
-            <tbody>{rows}</tbody>
-        </table>
-    );
-}
+  return (
+    <table className="history">
+      <thead>
+        <tr>
+          {["Название файла", "Размер", "Дата и время", ""].map((text) => (
+            <th scope="col">{text}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>{rows}</tbody>
+    </table>
+  );
+};

@@ -1,0 +1,10 @@
+export const loginURL = "/api/login";
+export const logoutURL = "/api/logout";
+export const uploadURL = "/api/upload";
+export const filePropsURL = "/api/file-props";
+export const imgPreviewURL = "/api/file-preview";
+export const imgDenoisedURL = "/api/file-preview-denoised";
+export const progressURL = "/api/progress";
+export const downloadURL = "/api/download";
+export const registerURL = "/api/register";
+export const historyURL = "/api/history";

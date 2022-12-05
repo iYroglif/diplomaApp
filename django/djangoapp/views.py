@@ -218,7 +218,7 @@ def register(request):
                 request.POST['username'], password=request.POST['password'], first_name=request.POST['first_name'], last_name=request.POST['last_name'], email=request.POST['email'], )
             user.save()
             login(request, user)
-            return HttpResponse(status=HTTPStatus.OK)
+            return JsonResponse({'username': request.POST['username']})
     else:
         return HttpResponse(status=HTTPStatus.METHOD_NOT_ALLOWED)
 

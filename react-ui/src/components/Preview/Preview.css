@@ -4,12 +4,13 @@
     justify-content: space-evenly;
 }
 
-.preview-imgs > img {
+.preview-imgs img {
     max-width: 90%;
 }
 
 .file-preview,
 .file-preview-denoised {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;

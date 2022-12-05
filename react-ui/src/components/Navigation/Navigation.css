@@ -20,10 +20,17 @@ nav {
     align-items: center;
 }
 
-.buttons {
+.nav-buttons {
     height: 100%;
     display: flex;
     font-weight: bold;
+}
+
+.link {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    color: inherit;
 }
 
 nav a {

@@ -1,39 +1,39 @@
 import "./Navigation.css";
-import User from "../../UserInterface";
-import Button from "./Button/Button";
-import ActiveButton from "./ActiveButton/ActiveButton";
-import Title from "./Title/Title";
+import { User } from "../../UserInterface";
+import { UserNavLink } from "./UserNavLink/UserNavLink";
+import { ActiveNavLink } from "./ActiveNavLink/ActiveNavLink";
+import { Title } from "./Title/Title";
 
 interface NavigationProps {
-    user: User | null;
+  user?: User;
 }
 
-export default function Navigation({ user }: NavigationProps) {
-    return (
-        <header>
-            <nav>
-                <Title />
+export const Navigation = ({ user }: NavigationProps) => {
+  return (
+    <header>
+      <nav>
+        <Title />
 
-                <div className="nav-links">
-                    <ActiveButton name="Удалить визуальный шум" link="/" className="nav-link" />
-                    <ActiveButton name="О системе" link="/about" className="nav-link" />
-                </div>
+        <div className="nav-links">
+          <ActiveNavLink name="Удалить визуальный шум" link="/" />
+          <ActiveNavLink name="О системе" link="/about" />
+        </div>
 
-                <div className="buttons">
-                    {user ? (
-                        <>
-                            <span className="username">{user.username}</span>
-                            <Button name="История" link="/history" className="login" />
-                            <Button name="Выйти" link="/logout" className="register" />
-                        </>
-                    ) : (
-                        <>
-                            <Button name="Вход" link="/login" className="login" />
-                            <Button name="Регистрация" link="/register" className="register" />
-                        </>
-                    )}
-                </div>
-            </nav>
-        </header>
-    );
-}
+        <div className="nav-buttons">
+          {user ? (
+            <>
+              <span className="username">{user.username}</span>
+              <UserNavLink name="История" link="/history" className="login" />
+              <UserNavLink name="Выйти" link="/logout" className="register" />
+            </>
+          ) : (
+            <>
+              <UserNavLink name="Вход" link="/login" className="login" />
+              <UserNavLink name="Регистрация" link="/register" className="register" />
+            </>
+          )}
+        </div>
+      </nav>
+    </header>
+  );
+};

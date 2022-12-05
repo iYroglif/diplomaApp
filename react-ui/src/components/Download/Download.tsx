@@ -1,28 +1,27 @@
-import { useEffect } from "react"
-import { useParams } from "react-router-dom"
-import "./Download.css"
+import { useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { downloadURL } from "../../api/urls";
+import "./Download.css";
 
-export default function Download() {
-    const params = useParams();
+export const Download = () => {
+  const params = useParams();
 
-    useEffect(() => {
-        document.location.href = "/api/download/" + params.fileId;
-    }, [params.fileId])
+  useEffect(() => {
+    document.location.href = `${downloadURL}/${params.fileId}`;
+  }, [params.fileId]);
 
-    return (
+  return (
+    <>
+      {params.fileId ? (
         <>
-            {params.fileId ? (
-                <>
-                    <h3>Скачивание файла начнется автоматически, если нет нажмите на кнопку:</h3>
-                    <a className="download-btn" href={"/api/download/" + params.fileId}>
-                        Скачать файл
-                    </a>
-                </>
-            ) : (
-                <>
-                    <p>Файл не существует</p>
-                </>
-            )}
+          <h3>Скачивание файла начнется автоматически, если нет нажмите на кнопку:</h3>
+          <a className="download-btn" href={`${downloadURL}/${params.fileId}`}>
+            Скачать файл
+          </a>
         </>
-    );
-}
+      ) : (
+        <p>Файл не существует</p>
+      )}
+    </>
+  );
+};
