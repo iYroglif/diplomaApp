@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites errors="1"
+            failures="0"
+            tests="0">
+
+  <testsuite name="sampleTest"
+    errors="1" failures="0" hostname="" id="" package="sampleTest" skipped="1"
+    tests="0" time="0.000" timestamp="">
+  
+
+  
+    <system-err>
+      
+┌────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                                    │
+│   GeckoDriver cannot be found in the current project.                                              │
+│                                                                                                    │
+│    You can either install geckodriver from NPM with:                                               │
+│                                                                                                    │
+│       npm install geckodriver --save-dev                                                           │
+│                                                                                                    │
+│    or download it from https://github.com/mozilla/geckodriver/releases,                            │
+│   extract the archive and set &#34;webdriver.server_path&#34; config option to point to the binary file.   │
+│                                                                                                    │
+│                                                                                                    │
+│                                                                                                    │
+└────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+    </system-err>
+  
+
+    
+    <error message="GeckoDriver cannot be found in the current project."><![CDATA[
+      Error: GeckoDriver cannot be found in the current project.
+    at FirefoxServiceBuilder.getStartupErrorMessage (D:\repos\diplomaApp\react-ui\node_modules\nightwatch\lib\transport\selenium-webdriver\service-builders\base-service.js:197:26)
+    at new BaseService (D:\repos\diplomaApp\react-ui\node_modules\nightwatch\lib\transport\selenium-webdriver\service-builders\base-service.js:81:18)
+    at new FirefoxServiceBuilder (D:\repos\diplomaApp\react-ui\node_modules\nightwatch\lib\transport\selenium-webdriver\service-builders\firefox.js:4:1)
+    at GeckoDriver.createDriverService (D:\repos\diplomaApp\react-ui\node_modules\nightwatch\lib\transport\selenium-webdriver\index.js:198:35)
+    at GeckoDriver.createSession (D:\repos\diplomaApp\react-ui\node_modules\nightwatch\lib\transport\selenium-webdriver\index.js:286:18)
+    at NightwatchClient.createSession (D:\repos\diplomaApp\react-ui\node_modules\nightwatch\lib\core\client.js:687:27)
+    at TestSuite.createSession (D:\repos\diplomaApp\react-ui\node_modules\nightwatch\lib\testsuite\index.js:459:24)
+    at TestSuite.startTestSuite (D:\repos\diplomaApp\react-ui\node_modules\nightwatch\lib\testsuite\index.js:474:17)
+    at TestSuite.runTestSuite (D:\repos\diplomaApp\react-ui\node_modules\nightwatch\lib\testsuite\index.js:507:17)
+    at TestSuite.run (D:\repos\diplomaApp\react-ui\node_modules\nightwatch\lib\testsuite\index.js:983:17)
+      ]]></error>  
+
+  
+    
+    <testcase
+      name="UI test" classname="sampleTest">
+      <skipped />
+    </testcase>
+    
+  
+  </testsuite>
+</testsuites>

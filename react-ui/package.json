@@ -40,5 +40,11 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/nightwatch": "^2.3.15",
+    "chromedriver": "^108.0.0",
+    "nightwatch": "^2.5.4",
+    "ts-node": "^10.9.1"
   }
 }
